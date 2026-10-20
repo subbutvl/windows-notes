@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { BackupFile, DriveStatus, Folder, ImportReport, Library, Note, NoteSummary, NoteUpdate, SearchHit } from "./types";
+import type { BackupFile, DriveStatus, Folder, ImportReport, Library, Note, NoteSummary, NoteUpdate, ScreenInfo, SearchHit } from "./types";
 
 /**
  * Thin wrapper over the Rust commands in src-tauri/src/lib.rs.
@@ -23,6 +23,9 @@ export interface Api {
   deleteFolder(id: string): Promise<Library>;
   systemFonts(): Promise<string[]>;
   startScreenSnip(): Promise<void>;
+  openMeasure(): Promise<void>;
+  closeMeasure(): Promise<void>;
+  screenInfo(): Promise<ScreenInfo>;
   searchNotes(query: string): Promise<SearchHit[]>;
   exportLibrary(path: string): Promise<void>;
   importLibrary(path: string): Promise<ImportReport>;
@@ -50,6 +53,9 @@ const tauriApi: Api = {
   deleteFolder: (id) => invoke("delete_folder", { id }),
   systemFonts: () => invoke("list_system_fonts"),
   startScreenSnip: () => invoke("start_screen_snip"),
+  openMeasure: () => invoke("open_measure"),
+  closeMeasure: () => invoke("close_measure"),
+  screenInfo: () => invoke("screen_info"),
   searchNotes: (query) => invoke("search_notes", { query }),
   exportLibrary: (path) => invoke("export_library", { path }),
   importLibrary: (path) => invoke("import_library", { path }),
@@ -155,6 +161,11 @@ function createMockApi(): Api {
     async startScreenSnip() {
       throw desktopOnly();
     },
+    async openMeasure() {
+      throw desktopOnly();
+    },
+    async closeMeasure() {},
+    screenInfo: async () => ({ rawDpi: null, scale: window.devicePixelRatio }),
     async searchNotes(query) {
       const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
       return [...notes.values()]

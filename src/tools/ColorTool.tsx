@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { CopyIcon, InsertIcon } from "../components/Icons";
+import { CopyIcon, EyedropperIcon, InsertIcon } from "../components/Icons";
 import { hexToRgb, normalizeHex, readableOn, rgbToHsl, tintsAndShades } from "../lib/color";
 import { SEPARATOR, openContextMenu } from "../lib/menu";
-import { insertIntoNote, useTools } from "../lib/tools";
+import { insertIntoNote, pickScreenColor, useTools } from "../lib/tools";
 import { IconAction, useCanInsert, type Copy } from "./shared";
 
 export function ColorTool({ copy }: { copy: Copy }) {
@@ -75,6 +75,9 @@ export function ColorTool({ copy }: { copy: Copy }) {
           }}
         />
         <input type="color" className="color-native" aria-label="Pick a color" value={color} onChange={(e) => setColor(e.target.value)} />
+        <IconAction label="Pick a color from the screen" onClick={() => pickScreenColor().then((hex) => hex && setColor(hex), () => {})}>
+          <EyedropperIcon size={16} />
+        </IconAction>
         <IconAction label="Insert hex into note" disabled={!canInsert} onClick={() => insertIntoNote(color.toUpperCase())}>
           <InsertIcon size={16} />
         </IconAction>

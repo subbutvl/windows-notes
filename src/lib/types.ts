@@ -69,3 +69,11 @@ export interface BackupFile {
   modifiedTime: string;
   size: string | null;
 }
+
+/** The monitor under the measure overlay. */
+export interface ScreenInfo {
+  /** Real pixels per inch from the monitor's EDID, when it reports one. */
+  rawDpi: number | null;
+  /** Windows display scaling (1.25 = 125%). */
+  scale: number;
+}

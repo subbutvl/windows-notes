@@ -1965,3 +1965,276 @@ button {
 .backup-message.is-error {
   color: var(--danger);
 }
+
+/* Screen measure overlay (its own transparent window) */
+html.measure-overlay,
+html.measure-overlay body {
+  background: transparent;
+  overflow: hidden;
+}
+
+.measure-root,
+.measure-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.measure-canvas {
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.measure-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 8px 10px 6px;
+  border-radius: 12px;
+  background: rgba(29, 29, 31, 0.94);
+  color: #f2f2f4;
+  font-size: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.measure-bar.is-top {
+  top: 40px;
+  bottom: auto;
+}
+
+.measure-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.measure-row button {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #45454b;
+  border-radius: 6px;
+  background: #2c2c30;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.measure-row button:hover:not(:disabled):not(.is-on) {
+  background: #3a3a3f;
+}
+
+.measure-row button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.measure-row button.is-on {
+  background: #f5c542;
+  border-color: #f5c542;
+  color: #1d1d1f;
+}
+
+.measure-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #a7a7ae;
+}
+
+.measure-row input[type="number"] {
+  width: 56px;
+  height: 24px;
+  padding: 0 4px;
+  border: 1px solid #45454b;
+  border-radius: 6px;
+  background: #1a1a1c;
+  color: #f2f2f4;
+  font: inherit;
+}
+
+.measure-row input[type="color"] {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.measure-units {
+  display: flex;
+}
+
+.measure-units button {
+  border-radius: 0;
+}
+
+.measure-units button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.measure-units button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.measure-row .measure-close {
+  margin-left: 4px;
+  background: #c4314b;
+  border-color: #c4314b;
+}
+
+.measure-hint {
+  margin: 6px 2px 0;
+  color: #a7a7ae;
+  font-size: 11px;
+}
+
+/* Screen color picker */
+.picker-button {
+  align-self: stretch;
+  height: 34px;
+}
+
+.picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.picker-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.picker-chip {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tool-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Date calculator */
+.date-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.date-section h3 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.date-inputs .tool-input {
+  flex: 1;
+  min-width: 0;
+  color-scheme: light dark;
+}
+
+.date-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.date-row span {
+  color: var(--muted);
+}
+
+.date-row strong {
+  font-weight: 600;
+  text-align: right;
+}
+
+.date-row small {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* World clock */
+.clock-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.clock-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.clock-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+.clock-dot.is-day {
+  background: #f5a623;
+  opacity: 1;
+}
+
+.clock-dot.is-working {
+  background: #30a14e;
+  opacity: 1;
+}
+
+.clock-place {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.clock-place strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.clock-place span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clock-time {
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,5 +1,6 @@
 mod drive;
 mod fonts;
+mod measure;
 mod store;
 
 use drive::{BackupFile, Drive, DriveStatus};
@@ -247,6 +248,22 @@ fn create_tray(app: &tauri::App) -> tauri::Result<()> {
     Ok(())
 }
 
+// Async: on Windows, making a window inside a synchronous command can deadlock.
+#[tauri::command]
+async fn open_measure(app: AppHandle) -> CmdResult<()> {
+    measure::open(&app)
+}
+
+#[tauri::command]
+fn close_measure(app: AppHandle) {
+    measure::close(&app);
+}
+
+#[tauri::command]
+fn screen_info(window: tauri::WebviewWindow) -> measure::ScreenInfo {
+    measure::screen_info(&window)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -267,12 +284,15 @@ pub fn run() {
             Ok(())
         })
         // Minimizing tucks the window into the notification area; closing still quits.
-        .on_window_event(|window, event| {
-            if let WindowEvent::Resized(_) = event {
+        .on_window_event(|window, event| match event {
+            WindowEvent::Resized(_) if window.label() == "main" => {
                 if window.is_minimized().unwrap_or(false) {
                     let _ = window.hide();
                 }
             }
+            // The measure overlay never outlives the main window.
+            WindowEvent::Destroyed if window.label() == "main" => measure::close(window.app_handle()),
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             get_library,
@@ -289,6 +309,9 @@ pub fn run() {
             delete_folder,
             list_system_fonts,
             start_screen_snip,
+            open_measure,
+            close_measure,
+            screen_info,
             search_notes,
             export_library,
             import_library,

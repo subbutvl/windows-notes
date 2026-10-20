@@ -301,6 +301,33 @@ export const SwatchesIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const EyedropperIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14.5 5.5l4 4M17 3a2.1 2.1 0 0 1 3 3l-2.5 2.5-3-3L17 3zM14.5 5.5L5 15v4h4l9.5-9.5" />
+  </Icon>
+);
+
+export const RulerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2.5" y="7" width="19" height="10" rx="1.5" />
+    <path d="M6.5 7v3M10 7v4M13.5 7v3M17 7v4" />
+  </Icon>
+);
+
+export const CalendarIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+  </Icon>
+);
+
+export const ClockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </Icon>
+);
+
 export const ClipboardIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="5" y="4" width="14" height="17" rx="2" />

@@ -7,7 +7,7 @@ import { INSERT_TEXT_EVENT } from "../editor/extensions";
  * a backup or a JSON export, and nothing is read back from one; it is all gone
  * when the app quits.
  */
-export type ToolId = "calculator" | "color" | "clipboard" | "password" | "currency" | "snip" | "tailwind";
+export type ToolId = "calculator" | "color" | "clipboard" | "password" | "currency" | "snip" | "tailwind" | "picker" | "measure" | "dates" | "clock";
 
 export interface Rates {
   /** Day the rates were published (ECB reference rates). */
@@ -108,4 +108,24 @@ export function watchClipboard(): () => void {
   tick();
   const timer = window.setInterval(tick, POLL_MS);
   return () => window.clearInterval(timer);
+}
+
+interface EyeDropperApi {
+  open(): Promise<{ sRGBHex: string }>;
+}
+
+/**
+ * Lets the user click any pixel on any screen and returns its hex colour,
+ * using Windows' built-in eyedropper in WebView2. Null when cancelled with Esc.
+ */
+export async function pickScreenColor(): Promise<string | null> {
+  const EyeDropper = (window as unknown as { EyeDropper?: new () => EyeDropperApi }).EyeDropper;
+  if (!EyeDropper) throw new Error("Picking colors from the screen needs a newer WebView2 runtime.");
+  try {
+    const { sRGBHex } = await new EyeDropper().open();
+    return sRGBHex.toLowerCase();
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") return null;
+    throw e;
+  }
 }
