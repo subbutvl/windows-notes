@@ -60,7 +60,7 @@ export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
       ["Delete note (in the list)", KEYS.deleteNote],
       ["Previous or next note", "Up / Down"],
       ["Switch light and dark", KEYS.toggleTheme],
-      ["Calculator, color and clipboard tools", KEYS.tools],
+      ["Open or close the last quick tool", KEYS.tools],
       ["Show shortcuts", KEYS.shortcuts],
     ],
   },

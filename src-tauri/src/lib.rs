@@ -81,6 +81,22 @@ async fn list_system_fonts() -> Vec<String> {
     fonts::system_fonts()
 }
 
+/// Opens Windows' own snipping overlay; the image goes to the clipboard and
+/// never passes through this app.
+#[tauri::command]
+fn start_screen_snip() -> CmdResult<()> {
+    #[cfg(windows)]
+    {
+        std::process::Command::new("explorer.exe")
+            .arg("ms-screenclip:")
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| format!("couldn't start the snipping tool: {e}"))
+    }
+    #[cfg(not(windows))]
+    Err("screen snip is only available on Windows".into())
+}
+
 fn show_main(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -156,7 +172,8 @@ pub fn run() {
             create_folder,
             rename_folder,
             delete_folder,
-            list_system_fonts
+            list_system_fonts,
+            start_screen_snip
         ])
         .run(tauri::generate_context!())
         .expect("error while running Windows Notes");

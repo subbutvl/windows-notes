@@ -3,11 +3,18 @@ import { create } from "zustand";
 import { INSERT_TEXT_EVENT } from "../editor/extensions";
 
 /**
- * The quick tools (calculator, colour, clipboard) live only in memory. Nothing
- * here is ever written to disk, a backup or a JSON export; it is gone when the
- * app quits.
+ * The quick tools live only in memory. Nothing here is ever written to disk,
+ * a backup or a JSON export, and nothing is read back from one; it is all gone
+ * when the app quits.
  */
-export type ToolTab = "calculator" | "color" | "clipboard";
+export type ToolId = "calculator" | "color" | "clipboard" | "password" | "currency" | "snip";
+
+export interface Rates {
+  /** Day the rates were published (ECB reference rates). */
+  date: string;
+  /** Units of each currency per 1 INR. */
+  perInr: Record<string, number>;
+}
 
 export interface ClipEntry {
   id: number;
@@ -17,12 +24,14 @@ export interface ClipEntry {
 
 interface ToolsState {
   open: boolean;
-  tab: ToolTab;
+  tool: ToolId;
   calcHistory: { expr: string; result: string }[];
   color: string;
   clips: ClipEntry[];
   clipsPaused: boolean;
-  toggle(tab?: ToolTab): void;
+  rates: Rates | null;
+  /** Opens a tool, or closes the panel if that tool is already showing. No tool: toggles the last one. */
+  toggle(tool?: ToolId): void;
 }
 
 export const MAX_CLIPS = 50;
@@ -30,24 +39,29 @@ const MAX_CLIP_LENGTH = 20_000;
 
 export const useTools = create<ToolsState>((set, get) => ({
   open: false,
-  tab: "calculator",
+  tool: "calculator",
   calcHistory: [],
   color: "#d9a400",
   clips: [],
   clipsPaused: false,
-  toggle(tab) {
+  rates: null,
+  toggle(tool) {
     const s = get();
-    if (tab && s.open && s.tab !== tab) set({ tab });
-    else set({ open: !s.open, tab: tab ?? s.tab });
+    if (!tool) set({ open: !s.open });
+    else set({ open: !(s.open && s.tool === tool), tool });
   },
 }));
 
 const inTauri = "__TAURI_INTERNALS__" in window;
+/** The clipboard text the watcher last saw. */
+let lastSeen: string | null = null;
 
 /** Sends plain text to the open note at the cursor. */
 export const insertIntoNote = (text: string) => window.dispatchEvent(new CustomEvent(INSERT_TEXT_EVENT, { detail: text }));
 
-export async function copyText(text: string) {
+/** Copies to the system clipboard. `secret` text (passwords) stays out of the clipboard history. */
+export async function copyText(text: string, secret = false) {
+  if (secret) lastSeen = text;
   try {
     if (inTauri) await writeText(text);
     else await navigator.clipboard.writeText(text);
@@ -57,7 +71,6 @@ export async function copyText(text: string) {
 }
 
 let nextClipId = 1;
-let lastSeen: string | null = null;
 
 /** Adds text to the top of the clipboard history, moving an older copy up. */
 function remember(text: string) {

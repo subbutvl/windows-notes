@@ -5,6 +5,7 @@ import { useNotes } from "../lib/store";
 import type { Folder, View } from "../lib/types";
 import type { ThemeChoice } from "../lib/theme";
 import { useTools } from "../lib/tools";
+import { openToolsMenu } from "../tools/registry";
 import { FolderIcon, KeyboardIcon, MonitorIcon, MoonIcon, NotesIcon, PinIcon, PlusIcon, SunIcon, ToolsIcon, TrashIcon } from "./Icons";
 
 /** MIME type used when a note row is dragged onto a folder. */
@@ -234,11 +235,13 @@ export function Sidebar({ theme, onCycleTheme }: { theme: ThemeChoice; onCycleTh
       <button
         className={`side-action${toolsOpen ? " is-active" : ""}`}
         aria-pressed={toolsOpen}
-        onClick={() => useTools.getState().toggle()}
-        title={`Calculator, color and clipboard (${KEYS.tools})`}
+        aria-haspopup="menu"
+        onClick={(e) => openToolsMenu(e.currentTarget)}
+        title={`Calculator, color codes, passwords and more (${KEYS.tools} opens the last one)`}
       >
         <ToolsIcon />
         <span>Quick Tools</span>
+        <span className="side-action-arrow" aria-hidden="true">›</span>
       </button>
       <button className="side-action" onClick={onCycleTheme} title={`Change theme (${KEYS.toggleTheme})`} aria-label={`Theme: ${themeLabel[theme]}. Click to change.`}>
         {theme === "light" ? <SunIcon /> : theme === "dark" ? <MoonIcon /> : <MonitorIcon />}

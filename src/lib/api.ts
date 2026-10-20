@@ -22,6 +22,7 @@ export interface Api {
   renameFolder(id: string, name: string): Promise<Folder>;
   deleteFolder(id: string): Promise<Library>;
   systemFonts(): Promise<string[]>;
+  startScreenSnip(): Promise<void>;
 }
 
 const tauriApi: Api = {
@@ -38,6 +39,7 @@ const tauriApi: Api = {
   renameFolder: (id, name) => invoke("rename_folder", { id, name }),
   deleteFolder: (id) => invoke("delete_folder", { id }),
   systemFonts: () => invoke("list_system_fonts"),
+  startScreenSnip: () => invoke("start_screen_snip"),
 };
 
 function createMockApi(): Api {
@@ -127,6 +129,9 @@ function createMockApi(): Api {
     },
     async systemFonts() {
       return ["Arial", "Calibri", "Cambria", "Candara", "Consolas", "Georgia", "Segoe UI", "Tahoma", "Times New Roman", "Verdana"];
+    },
+    async startScreenSnip() {
+      throw new Error("Screen snip works in the desktop app only.");
     },
   };
 }

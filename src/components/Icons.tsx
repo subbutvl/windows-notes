@@ -323,3 +323,24 @@ export const PlayIcon = (p: IconProps) => (
     <path d="M7 5l12 7-12 7z" />
   </Icon>
 );
+
+export const KeyIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="8" cy="15" r="4" />
+    <path d="M10.8 12.2 20 3M16 7l3 3M14 9l2 2" />
+  </Icon>
+);
+
+export const CurrencyIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 4h10M7 9h10M7 4c5 0 7 2 7 5s-3 5-7 5l8 6" />
+  </Icon>
+);
+
+export const ScissorsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="6" cy="6" r="3" />
+    <circle cx="6" cy="18" r="3" />
+    <path d="M8.1 8.1 20 20M8.1 15.9 20 4M14.5 12" />
+  </Icon>
+);
