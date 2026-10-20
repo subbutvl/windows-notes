@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { api } from "./api";
 import type { Folder, NoteSummary, NoteUpdate, View } from "./types";
 
+const SEARCH_DELAY_MS = 120;
+let searchTimer: number | undefined;
+let searchSeq = 0;
+
 interface NotesState {
   loaded: boolean;
   error: string | null;
@@ -14,6 +18,9 @@ interface NotesState {
   /** A folder name being typed in the sidebar; parentId null = top level. */
   folderDraft: { parentId: string | null } | null;
   showShortcuts: boolean;
+  showBackup: boolean;
+  /** Full-text matches for `query` (id → snippet), or null while none have come back yet. */
+  searchHits: Map<string, string | null> | null;
 
   init(): Promise<void>;
   setView(view: View): void;
@@ -47,6 +54,8 @@ export const useNotes = create<NotesState>((set, get) => {
     query: "",
     folderDraft: null,
     showShortcuts: false,
+    showBackup: false,
+    searchHits: null,
 
     async init() {
       try {
@@ -59,7 +68,24 @@ export const useNotes = create<NotesState>((set, get) => {
 
     setView: (view) => set({ view, selectedId: null }),
     select: (selectedId) => set({ selectedId }),
-    setQuery: (query) => set({ query }),
+    setQuery(query) {
+      set({ query });
+      window.clearTimeout(searchTimer);
+      if (!query.trim()) {
+        set({ searchHits: null });
+        return;
+      }
+      // Search runs in Rust over every note's text; wait for a pause in typing.
+      const seq = ++searchSeq;
+      searchTimer = window.setTimeout(async () => {
+        try {
+          const hits = await api.searchNotes(query);
+          if (seq === searchSeq) set({ searchHits: new Map(hits.map((h) => [h.id, h.snippet])) });
+        } catch (e) {
+          fail(e);
+        }
+      }, SEARCH_DELAY_MS);
+    },
 
     async newNote(target) {
       const { view, folders } = get();
@@ -88,6 +114,8 @@ export const useNotes = create<NotesState>((set, get) => {
     async saveNote(update) {
       try {
         putNote(await api.saveNote(update));
+        // Keep search results in step with what was just typed.
+        if (get().query.trim()) get().setQuery(get().query);
       } catch (e) {
         fail(e);
       }
@@ -163,7 +191,13 @@ export const useNotes = create<NotesState>((set, get) => {
 });
 
 /** Notes visible in the current view, newest first. */
-export function visibleNotes(notes: Record<string, NoteSummary>, view: View, query: string, folders: Folder[]): NoteSummary[] {
+export function visibleNotes(
+  notes: Record<string, NoteSummary>,
+  view: View,
+  query: string,
+  folders: Folder[],
+  hits: Map<string, string | null> | null,
+): NoteSummary[] {
   let folderSet: Set<string> | null = null;
   if (view.kind === "folder") {
     // A folder shows its own notes and those of its subfolders.
@@ -186,7 +220,10 @@ export function visibleNotes(notes: Record<string, NoteSummary>, view: View, que
     if (view.kind === "pinned" && !n.pinned) continue;
     if (folderSet && !folderSet.has(n.folderId)) continue;
     if (view.kind === "tag" && !n.tags.includes(view.tag)) continue;
-    if (q && !n.title.toLowerCase().includes(q) && !n.snippet.toLowerCase().includes(q)) continue;
+    if (q) {
+      // Until full-text results arrive, match on what the list already shows.
+      if (hits ? !hits.has(n.id) : !n.title.toLowerCase().includes(q) && !n.snippet.toLowerCase().includes(q)) continue;
+    }
     out.push(n);
   }
   out.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));

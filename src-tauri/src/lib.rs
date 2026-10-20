@@ -1,13 +1,19 @@
+mod drive;
 mod fonts;
 mod store;
 
-use std::sync::Mutex;
-use store::{Folder, Library, Note, NoteSummary, NoteUpdate, Store};
+use drive::{BackupFile, Drive, DriveStatus};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use store::{Folder, ImportReport, Library, Note, NoteSummary, NoteUpdate, SearchHit, Store};
+use tauri_plugin_opener::OpenerExt;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
 
-struct AppState(Mutex<Store>);
+struct AppState(Arc<Mutex<Store>>);
+/// Separate from the store so a slow upload never blocks typing.
+struct DriveState(Arc<Mutex<Drive>>);
 
 type CmdResult<T> = Result<T, String>;
 
@@ -77,6 +83,109 @@ fn delete_folder(state: State<AppState>, id: String) -> CmdResult<Library> {
 }
 
 #[tauri::command]
+fn search_notes(state: State<AppState>, query: String) -> CmdResult<Vec<SearchHit>> {
+    with_store(&state, |s| Ok(s.search(&query)))
+}
+
+const MAX_IMPORT_BYTES: u64 = 512 * 1024 * 1024;
+
+fn json_path(path: &str) -> CmdResult<PathBuf> {
+    let p = PathBuf::from(path);
+    match p.extension().and_then(|e| e.to_str()) {
+        Some(e) if e.eq_ignore_ascii_case("json") => Ok(p),
+        _ => Err("choose a .json file".into()),
+    }
+}
+
+#[tauri::command]
+fn export_library(state: State<AppState>, path: String) -> CmdResult<()> {
+    let path = json_path(&path)?;
+    let bytes = with_store(&state, |s| s.export())?;
+    std::fs::write(&path, bytes).map_err(|e| format!("couldn't write {}: {e}", path.display()))
+}
+
+#[tauri::command]
+fn import_library(state: State<AppState>, path: String) -> CmdResult<ImportReport> {
+    let path = json_path(&path)?;
+    let size = std::fs::metadata(&path).map_err(|e| format!("couldn't open {}: {e}", path.display()))?.len();
+    if size > MAX_IMPORT_BYTES {
+        return Err("that file is too large to be a Windows Notes export".into());
+    }
+    let bytes = std::fs::read(&path).map_err(|e| format!("couldn't read {}: {e}", path.display()))?;
+    with_store(&state, |s| s.import(&bytes))
+}
+
+/// Runs slow network work off the UI threads.
+async fn blocking<T: Send + 'static>(f: impl FnOnce() -> CmdResult<T> + Send + 'static) -> CmdResult<T> {
+    tauri::async_runtime::spawn_blocking(f).await.map_err(|e| e.to_string())?
+}
+
+fn lock<T>(m: &Mutex<T>) -> CmdResult<std::sync::MutexGuard<'_, T>> {
+    m.lock().map_err(|_| "busy, please try again".to_string())
+}
+
+// Every Drive command is async: sign-in can wait minutes for the browser and
+// must never hold up the window.
+#[tauri::command]
+async fn drive_status(drive: State<'_, DriveState>) -> CmdResult<DriveStatus> {
+    let drive = drive.0.clone();
+    blocking(move || Ok(lock(&drive)?.status())).await
+}
+
+#[tauri::command]
+async fn drive_set_client(drive: State<'_, DriveState>, client_id: String, client_secret: String) -> CmdResult<DriveStatus> {
+    let drive = drive.0.clone();
+    blocking(move || {
+        let d = lock(&drive)?;
+        d.set_client(&client_id, &client_secret)?;
+        Ok(d.status())
+    })
+    .await
+}
+
+#[tauri::command]
+async fn drive_connect(app: AppHandle, drive: State<'_, DriveState>) -> CmdResult<DriveStatus> {
+    let drive = drive.0.clone();
+    blocking(move || {
+        lock(&drive)?.connect(|url| app.opener().open_url(url, None::<&str>).map_err(|e| format!("couldn't open the browser: {e}")))
+    })
+    .await
+}
+
+#[tauri::command]
+async fn drive_disconnect(drive: State<'_, DriveState>) -> CmdResult<DriveStatus> {
+    let drive = drive.0.clone();
+    blocking(move || lock(&drive)?.disconnect()).await
+}
+
+#[tauri::command]
+async fn drive_list(drive: State<'_, DriveState>) -> CmdResult<Vec<BackupFile>> {
+    let drive = drive.0.clone();
+    blocking(move || lock(&drive)?.list_backups()).await
+}
+
+#[tauri::command]
+async fn drive_backup(state: State<'_, AppState>, drive: State<'_, DriveState>) -> CmdResult<BackupFile> {
+    let (store, drive) = (state.0.clone(), drive.0.clone());
+    blocking(move || {
+        let export = lock(&store)?.export()?;
+        let stamp = chrono::Local::now().format("%Y-%m-%d %H.%M").to_string();
+        lock(&drive)?.backup(export, &stamp)
+    })
+    .await
+}
+
+#[tauri::command]
+async fn drive_restore(state: State<'_, AppState>, drive: State<'_, DriveState>, file_id: String) -> CmdResult<ImportReport> {
+    let (store, drive) = (state.0.clone(), drive.0.clone());
+    blocking(move || {
+        let bytes = lock(&drive)?.download(&file_id)?;
+        lock(&store)?.import(&bytes)
+    })
+    .await
+}
+
+#[tauri::command]
 async fn list_system_fonts() -> Vec<String> {
     fonts::system_fonts()
 }
@@ -143,11 +252,17 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Roaming AppData, so notes live in %APPDATA%\WindowsNotes.
-            let root = app.path().data_dir()?.join("WindowsNotes");
+            // WINDOWS_NOTES_DATA_DIR points it elsewhere (used for speed tests).
+            let root = match std::env::var_os("WINDOWS_NOTES_DATA_DIR") {
+                Some(dir) => PathBuf::from(dir),
+                None => app.path().data_dir()?.join("WindowsNotes"),
+            };
             let store = Store::open(root)?;
-            app.manage(AppState(Mutex::new(store)));
+            app.manage(DriveState(Arc::new(Mutex::new(Drive::new(store.root())))));
+            app.manage(AppState(Arc::new(Mutex::new(store))));
             create_tray(app)?;
             Ok(())
         })
@@ -173,7 +288,17 @@ pub fn run() {
             rename_folder,
             delete_folder,
             list_system_fonts,
-            start_screen_snip
+            start_screen_snip,
+            search_notes,
+            export_library,
+            import_library,
+            drive_status,
+            drive_set_client,
+            drive_connect,
+            drive_disconnect,
+            drive_list,
+            drive_backup,
+            drive_restore
         ])
         .run(tauri::generate_context!())
         .expect("error while running Windows Notes");

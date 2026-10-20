@@ -1,5 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { forwardRef, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import { forwardRef, useEffect, useMemo, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { groupLabel, rowTime } from "../lib/dates";
 import { SEPARATOR, openContextMenu, type MenuEntry } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
@@ -7,6 +7,13 @@ import { useNotes, visibleNotes } from "../lib/store";
 import type { Folder, NoteSummary, View } from "../lib/types";
 import { ComposeIcon, FolderIcon, SearchIcon } from "./Icons";
 import { NOTE_DRAG_TYPE } from "./Sidebar";
+
+/** Wraps each search word found in `text` in <mark>. */
+function highlight(text: string, terms: string[]): ReactNode {
+  if (!terms.length || !text) return text;
+  const pattern = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "gi");
+  return text.split(pattern).map((part, i) => (i % 2 ? <mark key={i}>{part}</mark> : part));
+}
 
 type Row = { kind: "header"; label: string } | { kind: "note"; note: NoteSummary };
 
@@ -78,6 +85,7 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
   const folders = useNotes((s) => s.folders);
   const view = useNotes((s) => s.view);
   const query = useNotes((s) => s.query);
+  const hits = useNotes((s) => s.searchHits);
   const selectedId = useNotes((s) => s.selectedId);
   const select = useNotes((s) => s.select);
   const setQuery = useNotes((s) => s.setQuery);
@@ -85,7 +93,8 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
   const deleteNote = useNotes((s) => s.deleteNote);
 
   const folderNames = useMemo(() => new Map(folders.map((f) => [f.id, f.name])), [folders]);
-  const list = useMemo(() => visibleNotes(notes, view, query, folders), [notes, view, query, folders]);
+  const list = useMemo(() => visibleNotes(notes, view, query, folders, hits), [notes, view, query, folders, hits]);
+  const terms = useMemo(() => query.split(/\s+/).map((t) => t.replace(/^#/, "")).filter(Boolean), [query]);
   const rows = useMemo(() => buildRows(list, view), [list, view]);
   const order = useMemo(() => rows.flatMap((r) => (r.kind === "note" ? [r.note.id] : [])), [rows]);
 
@@ -144,7 +153,7 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
         <input
           ref={searchRef}
           type="search"
-          placeholder="Search"
+          placeholder="Search all notes"
           aria-label="Search notes"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -190,9 +199,9 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
                       e.dataTransfer.effectAllowed = "move";
                     }}
                   >
-                    <span className="note-title">{n.title || "New Note"}</span>
+                    <span className="note-title">{highlight(n.title || "New Note", terms)}</span>
                     <span className="note-meta">
-                      <strong>{rowTime(n.updatedAt)}</strong> {n.snippet || "No additional text"}
+                      <strong>{rowTime(n.updatedAt)}</strong> {highlight(hits?.get(n.id) ?? n.snippet, terms) || "No additional text"}
                     </span>
                     {view.kind !== "folder" && (
                       <span className="note-folder">

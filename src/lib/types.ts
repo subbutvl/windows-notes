@@ -42,3 +42,30 @@ export type View =
   | { kind: "deleted" }
   | { kind: "folder"; id: string }
   | { kind: "tag"; tag: string };
+
+export interface SearchHit {
+  id: string;
+  /** Text around the first match in the body, or null when only the title matched. */
+  snippet: string | null;
+}
+
+export interface ImportReport {
+  added: number;
+  updated: number;
+  skipped: number;
+  foldersAdded: number;
+}
+
+export interface DriveStatus {
+  configured: boolean;
+  connected: boolean;
+  email: string | null;
+  lastBackupAt: string | null;
+}
+
+export interface BackupFile {
+  id: string;
+  name: string;
+  modifiedTime: string;
+  size: string | null;
+}

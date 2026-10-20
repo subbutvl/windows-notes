@@ -344,3 +344,10 @@ export const ScissorsIcon = (p: IconProps) => (
     <path d="M8.1 8.1 20 20M8.1 15.9 20 4M14.5 12" />
   </Icon>
 );
+
+export const CloudIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.5 1.5A3.75 3.75 0 0 1 17.5 18z" />
+    <path d="M12 15V10M9.8 12.2 12 10l2.2 2.2" />
+  </Icon>
+);

@@ -6,7 +6,7 @@ import type { Folder, View } from "../lib/types";
 import type { ThemeChoice } from "../lib/theme";
 import { useTools } from "../lib/tools";
 import { openToolsMenu } from "../tools/registry";
-import { FolderIcon, KeyboardIcon, MonitorIcon, MoonIcon, NotesIcon, PinIcon, PlusIcon, SunIcon, ToolsIcon, TrashIcon } from "./Icons";
+import { CloudIcon, FolderIcon, KeyboardIcon, MonitorIcon, MoonIcon, NotesIcon, PinIcon, PlusIcon, SunIcon, ToolsIcon, TrashIcon } from "./Icons";
 
 /** MIME type used when a note row is dragged onto a folder. */
 export const NOTE_DRAG_TYPE = "application/x-windows-notes-note";
@@ -231,6 +231,10 @@ export function Sidebar({ theme, onCycleTheme }: { theme: ThemeChoice; onCycleTh
       <button className="side-action" onClick={() => setDraft(null)} title={`New folder (${KEYS.newFolder})`}>
         <PlusIcon />
         <span>New Folder</span>
+      </button>
+      <button className="side-action" onClick={() => useNotes.setState({ showBackup: true })} title="Back up to Google Drive, export or import">
+        <CloudIcon />
+        <span>Backup &amp; Export</span>
       </button>
       <button
         className={`side-action${toolsOpen ? " is-active" : ""}`}

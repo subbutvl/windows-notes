@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Folder, Library, Note, NoteSummary, NoteUpdate } from "./types";
+import type { BackupFile, DriveStatus, Folder, ImportReport, Library, Note, NoteSummary, NoteUpdate, SearchHit } from "./types";
 
 /**
  * Thin wrapper over the Rust commands in src-tauri/src/lib.rs.
@@ -23,6 +23,16 @@ export interface Api {
   deleteFolder(id: string): Promise<Library>;
   systemFonts(): Promise<string[]>;
   startScreenSnip(): Promise<void>;
+  searchNotes(query: string): Promise<SearchHit[]>;
+  exportLibrary(path: string): Promise<void>;
+  importLibrary(path: string): Promise<ImportReport>;
+  driveStatus(): Promise<DriveStatus>;
+  driveSetClient(clientId: string, clientSecret: string): Promise<DriveStatus>;
+  driveConnect(): Promise<DriveStatus>;
+  driveDisconnect(): Promise<DriveStatus>;
+  driveList(): Promise<BackupFile[]>;
+  driveBackup(): Promise<BackupFile>;
+  driveRestore(fileId: string): Promise<ImportReport>;
 }
 
 const tauriApi: Api = {
@@ -40,7 +50,19 @@ const tauriApi: Api = {
   deleteFolder: (id) => invoke("delete_folder", { id }),
   systemFonts: () => invoke("list_system_fonts"),
   startScreenSnip: () => invoke("start_screen_snip"),
+  searchNotes: (query) => invoke("search_notes", { query }),
+  exportLibrary: (path) => invoke("export_library", { path }),
+  importLibrary: (path) => invoke("import_library", { path }),
+  driveStatus: () => invoke("drive_status"),
+  driveSetClient: (clientId, clientSecret) => invoke("drive_set_client", { clientId, clientSecret }),
+  driveConnect: () => invoke("drive_connect"),
+  driveDisconnect: () => invoke("drive_disconnect"),
+  driveList: () => invoke("drive_list"),
+  driveBackup: () => invoke("drive_backup"),
+  driveRestore: (fileId) => invoke("drive_restore", { fileId }),
 };
+
+const desktopOnly = () => new Error("This works in the desktop app only.");
 
 function createMockApi(): Api {
   const now = () => new Date().toISOString();
@@ -131,7 +153,34 @@ function createMockApi(): Api {
       return ["Arial", "Calibri", "Cambria", "Candara", "Consolas", "Georgia", "Segoe UI", "Tahoma", "Times New Roman", "Verdana"];
     },
     async startScreenSnip() {
-      throw new Error("Screen snip works in the desktop app only.");
+      throw desktopOnly();
+    },
+    async searchNotes(query) {
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      return [...notes.values()]
+        .filter((n) => terms.every((t) => `${n.title} ${n.snippet} ${n.tags.join(" ")}`.toLowerCase().includes(t)))
+        .map((n) => ({ id: n.id, snippet: null }));
+    },
+    exportLibrary: async () => {
+      throw desktopOnly();
+    },
+    importLibrary: async () => {
+      throw desktopOnly();
+    },
+    driveStatus: async () => ({ configured: false, connected: false, email: null, lastBackupAt: null }),
+    driveSetClient: async () => {
+      throw desktopOnly();
+    },
+    driveConnect: async () => {
+      throw desktopOnly();
+    },
+    driveDisconnect: async () => ({ configured: false, connected: false, email: null, lastBackupAt: null }),
+    driveList: async () => [],
+    driveBackup: async () => {
+      throw desktopOnly();
+    },
+    driveRestore: async () => {
+      throw desktopOnly();
     },
   };
 }

@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import { BackupDialog } from "./components/BackupDialog";
 import { ContextMenu } from "./components/ContextMenu";
 import { Editor } from "./components/Editor";
 import { CloseIcon } from "./components/Icons";
@@ -45,6 +46,7 @@ export default function App() {
   const loaded = useNotes((s) => s.loaded);
   const error = useNotes((s) => s.error);
   const showShortcuts = useNotes((s) => s.showShortcuts);
+  const showBackup = useNotes((s) => s.showBackup);
   const toolsOpen = useTools((s) => s.open);
   const init = useNotes((s) => s.init);
   const { choice, cycle } = useTheme();
@@ -123,6 +125,7 @@ export default function App() {
       )}
       <ContextMenu />
       {showShortcuts && <ShortcutsDialog />}
+      {showBackup && <BackupDialog />}
     </div>
   );
 }
