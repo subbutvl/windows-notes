@@ -30,12 +30,16 @@ const mix = (from: RGB, to: RGB, amount: number) => rgbToHex(from.map((v, i) => 
 
 const STEPS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
-/** Tints mix in white, shades mix in black, in 10% steps. */
-export function tintsAndShades(hex: string) {
+/** The dark theme's note text and background, which dark-mode tints and shades mix toward. */
+export const DARK_LIGHTEST = "#f2f2f4";
+export const DARK_DARKEST = "#1a1a1c";
+
+/** Tints mix in `light` (white), shades mix in `dark` (black), in 10% steps. */
+export function tintsAndShades(hex: string, light = "#ffffff", dark = "#000000") {
   const rgb = hexToRgb(hex);
   return {
-    tints: STEPS.map((s) => ({ step: Math.round(s * 100), hex: mix(rgb, [255, 255, 255], s) })),
-    shades: STEPS.map((s) => ({ step: Math.round(s * 100), hex: mix(rgb, [0, 0, 0], s) })),
+    tints: STEPS.map((s) => ({ step: Math.round(s * 100), hex: mix(rgb, hexToRgb(light), s) })),
+    shades: STEPS.map((s) => ({ step: Math.round(s * 100), hex: mix(rgb, hexToRgb(dark), s) })),
   };
 }
 

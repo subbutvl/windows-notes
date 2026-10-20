@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/react";
 import { copySelection, readClipboardText } from "../lib/clipboard";
 import { SEPARATOR, type MenuEntry } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
-import { tintsAndShades } from "../lib/color";
+import { DARK_DARKEST, DARK_LIGHTEST, tintsAndShades } from "../lib/color";
 import { toggleCodeBlock } from "./codeBlock";
 import { HIGHLIGHT_COLORS, LINK_REQUEST_EVENT, TEXT_COLORS } from "./extensions";
 
@@ -57,21 +57,27 @@ export function tableMenu(e: Editor): MenuEntry[] {
 const cell = (type: "tableHeader" | "tableCell", text: string) => ({ type, content: [{ type: "paragraph", content: text ? [{ type: "text", text }] : [] }] });
 
 /**
- * Adds a table of tints (mixed with white) and shades (mixed with black) of a
- * colour after the block at `pos`. The hex codes show on their own colour and
- * can be selected and copied like any text.
+ * Adds a table of tints and shades of a colour below the block at `pos`:
+ * light-mode columns mix toward white and black, dark-mode columns toward the
+ * dark theme's text and background, so each set blends with its theme.
  */
 export function insertTintsAndShades(e: Editor, hex: string, pos: number) {
-  const { tints, shades } = tintsAndShades(hex);
+  const light = tintsAndShades(hex);
+  const dark = tintsAndShades(hex, DARK_LIGHTEST, DARK_DARKEST);
   const label = hex.toUpperCase();
-  const rows = tints.map((t, i) => ({ type: "tableRow", content: [cell("tableCell", `${t.step}%`), cell("tableCell", t.hex.toUpperCase()), cell("tableCell", shades[i].hex.toUpperCase())] }));
+  const up = (s: string) => s.toUpperCase();
+  const rows = light.tints.map((t, i) => ({
+    type: "tableRow",
+    content: [`${t.step}%`, up(t.hex), up(light.shades[i].hex), up(dark.tints[i].hex), up(dark.shades[i].hex)].map((text) => cell("tableCell", text)),
+  }));
+  const header = ["Mix", "Light tint", "Light shade", "Dark tint", "Dark shade"].map((text) => cell("tableHeader", text));
   const $pos = e.state.doc.resolve(pos);
   const after = $pos.depth > 0 ? $pos.after(1) : e.state.doc.content.size;
   e.chain()
     .focus()
     .insertContentAt(after, [
-      { type: "paragraph", content: [{ type: "text", text: `Tints and shades of ${label}` }] },
-      { type: "table", content: [{ type: "tableRow", content: [cell("tableHeader", "Mix"), cell("tableHeader", "Tint (+ white)"), cell("tableHeader", "Shade (+ black)")] }, ...rows] },
+      { type: "paragraph", content: [{ type: "text", text: `Tints and shades of ${label} for light mode (+ white / black) and dark mode (+ ${up(DARK_LIGHTEST)} / ${up(DARK_DARKEST)})` }] },
+      { type: "table", content: [{ type: "tableRow", content: header }, ...rows] },
       { type: "paragraph" },
     ])
     .run();
