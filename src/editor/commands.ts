@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/react";
 import { copySelection, readClipboardText } from "../lib/clipboard";
 import { SEPARATOR, type MenuEntry } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
+import { toggleCodeBlock } from "./codeBlock";
 import { HIGHLIGHT_COLORS, LINK_REQUEST_EVENT, TEXT_COLORS } from "./extensions";
 
 export type StyleId = "title" | "heading" | "subheading" | "body" | "monospaced";
@@ -12,7 +13,7 @@ export const TEXT_STYLES: { id: StyleId; label: string; shortcut: string; run(e:
   { id: "heading", label: "Heading", shortcut: KEYS.heading, run: (e) => e.chain().focus().setHeading({ level: 2 }).run() },
   { id: "subheading", label: "Subheading", shortcut: KEYS.subheading, run: (e) => e.chain().focus().setHeading({ level: 3 }).run() },
   { id: "body", label: "Body", shortcut: KEYS.body, run: (e) => e.chain().focus().setParagraph().run() },
-  { id: "monospaced", label: "Monospaced", shortcut: KEYS.monospaced, run: (e) => e.chain().focus().setCodeBlock().run() },
+  { id: "monospaced", label: "Code Block", shortcut: KEYS.monospaced, run: (e) => e.isActive("codeBlock") || toggleCodeBlock(e) },
 ];
 
 export function currentStyle(e: Editor): StyleId {
@@ -115,6 +116,7 @@ export function editorMenu(e: Editor): MenuEntry[] {
     { label: "Bulleted List", shortcut: KEYS.bulletList, checked: e.isActive("bulletList"), onSelect: () => c().toggleBulletList().run() },
     { label: "Numbered List", shortcut: KEYS.numberedList, checked: e.isActive("orderedList"), onSelect: () => c().toggleOrderedList().run() },
     { label: "Checklist", shortcut: KEYS.checklist, checked: e.isActive("taskList"), onSelect: () => c().toggleTaskList().run() },
+    { label: "Code Block", shortcut: KEYS.monospaced, checked: e.isActive("codeBlock"), onSelect: () => toggleCodeBlock(e) },
     SEPARATOR,
     e.isActive("link")
       ? { label: "Edit Link…", shortcut: KEYS.link, onSelect: requestLink }

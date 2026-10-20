@@ -13,6 +13,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import StarterKit from "@tiptap/starter-kit";
+import { toggleCodeBlock } from "./codeBlock";
 import { ColorCodes } from "./colorCodes";
 
 export const FONT_SIZES = [11, 12, 13, 14, 15, 16, 18, 20, 24, 28, 32, 36, 48];
@@ -206,6 +207,8 @@ export const INSERT_TEXT_EVENT = "windows-notes:insert-text";
 /** Shortcuts that don't belong to a single extension. */
 const NoteShortcuts = Extension.create({
   name: "noteShortcuts",
+  // Ahead of StarterKit, so Ctrl+Alt+C uses the merging code block toggle.
+  priority: 101,
   addKeyboardShortcuts() {
     const clear = () => this.editor.chain().focus().unsetAllMarks().run();
     return {
@@ -215,6 +218,7 @@ const NoteShortcuts = Extension.create({
         window.dispatchEvent(new CustomEvent(LINK_REQUEST_EVENT));
         return true;
       },
+      "Mod-Alt-c": () => toggleCodeBlock(this.editor),
       "Mod-Alt-t": () => this.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
     };
   },

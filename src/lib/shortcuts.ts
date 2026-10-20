@@ -82,7 +82,7 @@ export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
       ["Heading", KEYS.heading],
       ["Subheading", KEYS.subheading],
       ["Body", KEYS.body],
-      ["Monospaced", KEYS.monospaced],
+      ["Code block", KEYS.monospaced],
       ["Block quote", KEYS.quote],
     ],
   },

@@ -892,13 +892,11 @@ button {
 }
 
 .editor-page {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 20px 48px 120px;
+  padding: 16px 40px 120px;
 }
 
 .editor-date {
-  text-align: center;
+  text-align: left;
   font-size: 12px;
   color: var(--muted);
   margin-bottom: 16px;
@@ -961,8 +959,12 @@ button {
 
 .note-body pre {
   background: var(--search-bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 4;
 }
 
 .note-body pre code {

@@ -8,6 +8,7 @@ import {
   BoldIcon,
   BulletListIcon,
   ChecklistIcon,
+  CodeIcon,
   HighlighterIcon,
   IndentIcon,
   ItalicIcon,
@@ -25,6 +26,7 @@ import { Popover, keepFocus } from "../components/Popover";
 import { fontName, fontStack } from "../lib/fonts";
 import { KEYS } from "../lib/shortcuts";
 import { FontPicker } from "./FontPicker";
+import { toggleCodeBlock } from "./codeBlock";
 import { TEXT_STYLES, currentStyle, requestLink, tableMenu } from "./commands";
 import { DEFAULT_FONT_SIZE, FONT_SIZES, FONT_WEIGHTS, HIGHLIGHT_COLORS, TEXT_COLORS } from "./extensions";
 
@@ -320,11 +322,14 @@ export function Toolbar({ editor, children }: { editor: Editor; children?: React
         <ToolButton label={s.link ? "Edit link" : "Add link"} shortcut={KEYS.link} active={s.link} onClick={requestLink}>
           <LinkIcon />
         </ToolButton>
+        <ToolButton label={s.code ? "Turn code block back into text" : "Code block"} shortcut={KEYS.monospaced} active={s.code} onClick={() => toggleCodeBlock(editor)}>
+          <CodeIcon />
+        </ToolButton>
         <Popover label="More formatting" button={<MoreIcon />}>
           {(close) => (
             <>
               <MenuRow label="Block Quote" shortcut={KEYS.quote} checked={s.quote} onClick={() => (c().toggleBlockquote().run(), close())} />
-              <MenuRow label="Code Block" shortcut={KEYS.monospaced} checked={s.code} onClick={() => (c().toggleCodeBlock().run(), close())} />
+              <MenuRow label="Code Block" shortcut={KEYS.monospaced} checked={s.code} onClick={() => (toggleCodeBlock(editor), close())} />
               <MenuRow label="Divider" onClick={() => (c().setHorizontalRule().run(), close())} />
               <div className="menu-separator" />
               <MenuRow label="Clear Formatting" shortcut={KEYS.clearFormatting} onClick={() => (c().unsetAllMarks().run(), close())} />
