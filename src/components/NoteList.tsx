@@ -1,9 +1,12 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { forwardRef, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
 import { groupLabel, rowTime } from "../lib/dates";
+import { SEPARATOR, openContextMenu, type MenuEntry } from "../lib/menu";
+import { KEYS } from "../lib/shortcuts";
 import { useNotes, visibleNotes } from "../lib/store";
-import type { NoteSummary, View } from "../lib/types";
+import type { Folder, NoteSummary, View } from "../lib/types";
 import { ComposeIcon, FolderIcon, SearchIcon } from "./Icons";
+import { NOTE_DRAG_TYPE } from "./Sidebar";
 
 type Row = { kind: "header"; label: string } | { kind: "note"; note: NoteSummary };
 
@@ -47,6 +50,27 @@ function viewTitle(view: View, folderName: (id: string) => string): string {
     case "tag":
       return `#${view.tag}`;
   }
+}
+
+function noteMenu(n: NoteSummary, folders: Folder[]): MenuEntry[] {
+  const s = useNotes.getState();
+  if (n.deletedAt) {
+    return [
+      { label: "Recover", onSelect: () => s.restoreNote(n.id) },
+      SEPARATOR,
+      { label: "Delete Now", danger: true, onSelect: () => s.purgeNote(n.id) },
+    ];
+  }
+  return [
+    { label: "Open", onSelect: () => s.select(n.id) },
+    { label: n.pinned ? "Unpin Note" : "Pin Note", shortcut: KEYS.pin, onSelect: () => s.togglePin(n.id) },
+    {
+      label: "Move To",
+      submenu: folders.map((f) => ({ label: f.name, checked: f.id === n.folderId, disabled: f.id === n.folderId, onSelect: () => s.moveNote(n.id, f.id) })),
+    },
+    SEPARATOR,
+    { label: "Delete", shortcut: KEYS.deleteNote, danger: true, onSelect: () => s.deleteNote(n.id) },
+  ];
 }
 
 export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, searchRef) {
@@ -109,7 +133,7 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
           </span>
         </div>
         {view.kind !== "deleted" && (
-          <button className="icon-button accent" aria-label="New note (Ctrl+N)" title="New note (Ctrl+N)" onClick={newNote}>
+          <button className="icon-button accent" aria-label="New note (Ctrl+N)" title="New note (Ctrl+N)" onClick={() => newNote()}>
             <ComposeIcon size={20} />
           </button>
         )}
@@ -129,7 +153,14 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
         <kbd>Ctrl+F</kbd>
       </div>
 
-      <div className="list-scroll" ref={scrollRef} tabIndex={0} onKeyDown={onKeyDown} aria-label="Note list">
+      <div
+        className="list-scroll"
+        ref={scrollRef}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        aria-label="Note list"
+        onContextMenu={(e) => view.kind !== "deleted" && openContextMenu(e, [{ label: "New Note", shortcut: KEYS.newNote, onSelect: () => newNote() }])}
+      >
         {count === 0 ? (
           <p className="list-empty">{query ? "No matching notes" : view.kind === "deleted" ? "Nothing here" : "No notes"}</p>
         ) : (
@@ -148,7 +179,17 @@ export const NoteList = forwardRef<HTMLInputElement>(function NoteList(_props, s
               const selected = n.id === selectedId;
               return (
                 <div key={v.key} style={style} className="note-row-wrap">
-                  <button className={`note-row${selected ? " is-selected" : ""}`} aria-pressed={selected} onClick={() => select(n.id)}>
+                  <button
+                    className={`note-row${selected ? " is-selected" : ""}`}
+                    aria-pressed={selected}
+                    onClick={() => select(n.id)}
+                    onContextMenu={(e) => openContextMenu(e, noteMenu(n, folders))}
+                    draggable={!n.deletedAt}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData(NOTE_DRAG_TYPE, n.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                  >
                     <span className="note-title">{n.title || "New Note"}</span>
                     <span className="note-meta">
                       <strong>{rowTime(n.updatedAt)}</strong> {n.snippet || "No additional text"}

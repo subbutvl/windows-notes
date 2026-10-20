@@ -105,3 +105,164 @@ export const CloseIcon = (p: IconProps) => (
     <path d="M6 6l12 12M18 6L6 18" />
   </Icon>
 );
+
+export const UndoIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+  </Icon>
+);
+
+export const RedoIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M15 14l5-5-5-5" />
+    <path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />
+  </Icon>
+);
+
+export const BoldIcon = (p: IconProps) => (
+  <Icon {...p} strokeWidth={2.2}>
+    <path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z" />
+  </Icon>
+);
+
+export const ItalicIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M19 4h-9M14 20H5M15 4L9 20" />
+  </Icon>
+);
+
+export const UnderlineIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 4v6a6 6 0 0 0 12 0V4M4 21h16" />
+  </Icon>
+);
+
+export const StrikeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M16 6.5C15.3 5 13.8 4 12 4c-2.5 0-4.5 1.6-4.5 3.8 0 1.6 1 2.6 2.6 3.2M4 12h16M8 17.5C8.7 19 10.3 20 12.3 20c2.6 0 4.7-1.5 4.7-3.8 0-.9-.3-1.6-.8-2.2" />
+  </Icon>
+);
+
+export const HighlighterIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 11l-6 6v3h9l3-3" />
+    <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
+  </Icon>
+);
+
+export const AlignLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16M4 12h10M4 18h14" />
+  </Icon>
+);
+
+export const AlignCenterIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16M7 12h10M5 18h14" />
+  </Icon>
+);
+
+export const AlignRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16M10 12h10M6 18h14" />
+  </Icon>
+);
+
+export const AlignJustifyIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </Icon>
+);
+
+export const BulletListIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <circle cx="4.5" cy="6" r="1" fill="currentColor" />
+    <circle cx="4.5" cy="12" r="1" fill="currentColor" />
+    <circle cx="4.5" cy="18" r="1" fill="currentColor" />
+  </Icon>
+);
+
+export const NumberedListIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 6h10M10 12h10M10 18h10M4 4h1.5v4M4 8h3M4 14.5a1.5 1.5 0 0 1 3 0c0 1.5-3 2-3 3.5h3" />
+  </Icon>
+);
+
+export const ChecklistIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9" />
+  </Icon>
+);
+
+export const TableIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M3 10h18M3 15h18M9 4v16M15 4v16" />
+  </Icon>
+);
+
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);
+
+export const QuoteIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 4v16M9 8h10M9 12h10M9 16h6" />
+  </Icon>
+);
+
+export const CodeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 7l-5 5 5 5M16 7l5 5-5 5" />
+  </Icon>
+);
+
+export const DividerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 12h18M7 6h10M7 18h10" strokeDasharray="0" />
+  </Icon>
+);
+
+export const EraserIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 21h13M5.5 15.5l9-9a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L12 19H8z" />
+  </Icon>
+);
+
+export const IndentIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 6h10M10 12h10M10 18h10M3 8l4 4-4 4" />
+  </Icon>
+);
+
+export const OutdentIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 6h10M10 12h10M10 18h10M7 8l-4 4 4 4" />
+  </Icon>
+);
+
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 9l6 6 6-6" />
+  </Icon>
+);
+
+export const MoreIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="5" cy="12" r="1.3" fill="currentColor" />
+    <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+    <circle cx="19" cy="12" r="1.3" fill="currentColor" />
+  </Icon>
+);
+
+export const KeyboardIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="2" y="6" width="20" height="12" rx="2" />
+    <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+  </Icon>
+);

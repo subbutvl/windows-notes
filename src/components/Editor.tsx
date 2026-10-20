@@ -1,12 +1,26 @@
 import { EditorState } from "@tiptap/pm/state";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent, useEditor, type Editor as TiptapEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { editorMenu } from "../editor/commands";
+import { LINK_REQUEST_EVENT, createExtensions } from "../editor/extensions";
+import { LinkDialog } from "../editor/LinkDialog";
+import { Toolbar } from "../editor/Toolbar";
 import { api } from "../lib/api";
 import { longDate } from "../lib/dates";
+import { openContextMenu } from "../lib/menu";
+import { KEYS } from "../lib/shortcuts";
 import { useNotes } from "../lib/store";
 import type { DocJSON } from "../lib/types";
 import { PinIcon, RestoreIcon, TrashIcon } from "./Icons";
+
+const inTauri = "__TAURI_INTERNALS__" in window;
+
+/** Ctrl+click opens a link in the default browser; links never load inside the app. */
+function openLink(href: string) {
+  if (inTauri) openUrl(href).catch((e) => useNotes.setState({ error: String(e) }));
+  else window.open(href, "_blank", "noopener");
+}
 
 const SAVE_DELAY_MS = 400;
 const SNIPPET_LENGTH = 120;
@@ -55,9 +69,24 @@ export function Editor() {
     saveNote({ id, ...extractMeta(editor), content: editor.getJSON() as DocJSON });
   }, [saveNote]);
 
+  const [linkOpen, setLinkOpen] = useState(false);
+
   const editor = useEditor({
-    extensions: [StarterKit],
-    editorProps: { attributes: { class: "note-body", spellcheck: "true", "aria-label": "Note text" } },
+    extensions: createExtensions(),
+    // The toolbar subscribes to just the state it shows, so typing doesn't re-render this tree.
+    shouldRerenderOnTransaction: false,
+    editorProps: {
+      attributes: { class: "note-body", spellcheck: "true", "aria-label": "Note text" },
+      handleDOMEvents: {
+        click: (_view, event) => {
+          const anchor = (event.target as HTMLElement).closest("a[href]");
+          if (!anchor) return false;
+          event.preventDefault();
+          if (event.ctrlKey) openLink(anchor.getAttribute("href")!);
+          return true;
+        },
+      },
+    },
     onUpdate: () => {
       if (!loadedId.current) return;
       if (timer.current !== null) window.clearTimeout(timer.current);
@@ -71,7 +100,10 @@ export function Editor() {
     if (!editor) return;
     if (timer.current !== null) saveNow();
     loadedId.current = null;
-    if (!selectedId) return;
+    if (!selectedId) {
+      editor.setEditable(false);
+      return;
+    }
 
     let cancelled = false;
     api.loadNote(selectedId).then(
@@ -107,29 +139,37 @@ export function Editor() {
     };
   }, [saveNow]);
 
+  useEffect(() => {
+    const onLink = () => editor?.isEditable && setLinkOpen(true);
+    window.addEventListener(LINK_REQUEST_EVENT, onLink);
+    return () => window.removeEventListener(LINK_REQUEST_EVENT, onLink);
+  }, [editor]);
+
   const deleted = !!summary?.deletedAt;
 
   return (
     <main className="editor-pane">
-      <div className="editor-toolbar" role="toolbar" aria-label="Note actions">
-        <div className="toolbar-spacer" />
-        {summary && !deleted && (
-          <>
-            <button
-              className={`icon-button${summary.pinned ? " accent" : ""}`}
-              aria-pressed={summary.pinned}
-              aria-label={summary.pinned ? "Unpin note" : "Pin note"}
-              title={summary.pinned ? "Unpin note" : "Pin note"}
-              onClick={() => togglePin(summary.id)}
-            >
-              <PinIcon />
-            </button>
-            <button className="icon-button" aria-label="Delete note" title="Delete note (Delete)" onClick={() => deleteNote(summary.id)}>
-              <TrashIcon />
-            </button>
-          </>
-        )}
-      </div>
+      {editor && (
+        <Toolbar editor={editor}>
+          {summary && !deleted && (
+            <>
+              <button
+                className={`tool-button${summary.pinned ? " accent" : ""}`}
+                aria-pressed={summary.pinned}
+                aria-label={summary.pinned ? "Unpin note" : "Pin note"}
+                title={`${summary.pinned ? "Unpin note" : "Pin note"} (${KEYS.pin})`}
+                onClick={() => togglePin(summary.id)}
+              >
+                <PinIcon />
+              </button>
+              <button className="tool-button" aria-label="Delete note" title="Delete note" onClick={() => deleteNote(summary.id)}>
+                <TrashIcon />
+              </button>
+            </>
+          )}
+        </Toolbar>
+      )}
+      {linkOpen && editor && <LinkDialog editor={editor} onClose={() => setLinkOpen(false)} />}
 
       {deleted && summary && (
         <div className="deleted-banner" role="status">
@@ -146,7 +186,7 @@ export function Editor() {
       <div className="editor-scroll" hidden={!summary}>
         <article className="editor-page">
           {summary && <div className="editor-date">{longDate(summary.updatedAt)}</div>}
-          <EditorContent editor={editor} />
+          <EditorContent editor={editor} onContextMenu={(e) => editor && openContextMenu(e, editorMenu(editor))} />
         </article>
       </div>
       {!summary && <div className="editor-empty">No note selected</div>}

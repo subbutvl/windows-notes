@@ -11,12 +11,16 @@ interface NotesState {
   view: View;
   selectedId: string | null;
   query: string;
+  /** A folder name being typed in the sidebar; parentId null = top level. */
+  folderDraft: { parentId: string | null } | null;
+  showShortcuts: boolean;
 
   init(): Promise<void>;
   setView(view: View): void;
   select(id: string | null): void;
   setQuery(query: string): void;
-  newNote(): Promise<void>;
+  newNote(folderId?: string): Promise<void>;
+  moveNote(id: string, folderId: string): Promise<void>;
   saveNote(update: NoteUpdate): Promise<void>;
   togglePin(id: string): Promise<void>;
   deleteNote(id: string): Promise<void>;
@@ -41,6 +45,8 @@ export const useNotes = create<NotesState>((set, get) => {
     view: { kind: "all" },
     selectedId: null,
     query: "",
+    folderDraft: null,
+    showShortcuts: false,
 
     async init() {
       try {
@@ -55,15 +61,25 @@ export const useNotes = create<NotesState>((set, get) => {
     select: (selectedId) => set({ selectedId }),
     setQuery: (query) => set({ query }),
 
-    async newNote() {
+    async newNote(target) {
       const { view, folders } = get();
-      const folderId = view.kind === "folder" ? view.id : folders[0]?.id;
+      const folderId = target ?? (view.kind === "folder" ? view.id : folders[0]?.id);
       if (!folderId) return;
       try {
         const note = await api.createNote(folderId);
         const { content: _content, ...summary } = note;
         putNote(summary);
-        set({ selectedId: note.id, query: "", view: view.kind === "folder" ? view : { kind: "all" } });
+        const keepView = view.kind === "folder" && view.id === folderId;
+        set({ selectedId: note.id, query: "", view: keepView ? view : target ? { kind: "folder", id: folderId } : { kind: "all" } });
+      } catch (e) {
+        fail(e);
+      }
+    },
+
+    async moveNote(id, folderId) {
+      if (get().notes[id]?.folderId === folderId) return;
+      try {
+        putNote(await api.moveNote(id, folderId));
       } catch (e) {
         fail(e);
       }
@@ -120,7 +136,7 @@ export const useNotes = create<NotesState>((set, get) => {
     async createFolder(name, parentId) {
       try {
         const folder = await api.createFolder(name, parentId);
-        set((s) => ({ folders: [...s.folders, folder], view: { kind: "folder", id: folder.id }, selectedId: null }));
+        set((s) => ({ folders: [...s.folders, folder], view: { kind: "folder", id: folder.id }, selectedId: null, folderDraft: null }));
       } catch (e) {
         fail(e);
       }

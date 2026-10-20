@@ -20,15 +20,25 @@ Rust storage tests: `cd src-tauri; cargo test`.
 
 ## Shortcuts
 
+Press **Ctrl+/** in the app for the full list. The most used:
+
 | Keys | Action |
 | --- | --- |
-| Ctrl+N | New note |
+| Ctrl+N / Ctrl+Shift+N | New note / new folder |
 | Ctrl+F | Search |
-| Up / Down | Move through the note list |
-| Delete | Move the selected note to Recently Deleted |
+| Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Shift+S | Bold, italic, underline, strikethrough |
+| Ctrl+] / Ctrl+[ | Bigger / smaller text |
+| Ctrl+L, Ctrl+E, Ctrl+R, Ctrl+J | Align left, center, right, justify |
+| Ctrl+Shift+8 / 7 / L | Bulleted list / numbered list / checklist |
+| Ctrl+Alt+1 / 2 / 3 / 0 | Title / heading / subheading / body |
+| Ctrl+K | Link (Ctrl+click a link to open it) |
+| Ctrl+Alt+T | Insert table |
+| Ctrl+Shift+P | Pin note |
+
+Right-click anywhere for the app's own menus: formatting and tables in a note, pin/move/delete on a note in the list, new note/subfolder/rename/delete on a folder. Notes can be dragged onto a folder.
 
 ## Layout
 
-- `src/` React UI: `components/` (Sidebar, NoteList, Editor), `lib/` (store, api, theme, dates)
+- `src/` React UI: `components/` (Sidebar, NoteList, Editor, ContextMenu), `editor/` (TipTap extensions, toolbar, commands), `lib/` (store, api, menus, shortcuts, theme)
 - `src-tauri/src/store.rs` note storage: atomic writes, index rebuild, Recently Deleted
 - `src-tauri/src/lib.rs` Tauri commands
