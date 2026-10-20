@@ -988,7 +988,7 @@ button {
 .note-body a {
   color: var(--accent);
   text-decoration: underline;
-  cursor: text;
+  cursor: pointer;
 }
 
 .note-body mark {

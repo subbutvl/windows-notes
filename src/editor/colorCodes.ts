@@ -6,6 +6,22 @@ import { parseColorCode } from "../lib/color";
 
 const COLOR_CODE = /(?<![\w&#])#[0-9a-f]{3,8}(?![\w-])|\b(?:rgba?|hsla?)\([^()\n]{5,60}\)/gi;
 
+/** The colour code at a document position, with its range, or null. */
+export function colorCodeAt(doc: PMNode, pos: number): { code: string; from: number; to: number } | null {
+  const $pos = doc.resolve(Math.min(Math.max(pos, 0), doc.content.size));
+  const block = $pos.parent;
+  if (!block.isTextblock) return null;
+  const start = $pos.start();
+  const offset = $pos.parentOffset;
+  const text = block.textBetween(0, block.content.size, undefined, "\ufffc");
+  for (const m of text.matchAll(COLOR_CODE)) {
+    if (offset >= m.index! && offset <= m.index! + m[0].length && parseColorCode(m[0])) {
+      return { code: m[0], from: start + m.index!, to: start + m.index! + m[0].length };
+    }
+  }
+  return null;
+}
+
 /** Swatch decorations for every colour code in one paragraph, heading or list item. */
 function decorateBlock(block: PMNode, pos: number, out: Decoration[]) {
   // One placeholder character per inline leaf (line breaks), so offsets match positions.

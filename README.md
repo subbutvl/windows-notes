@@ -31,7 +31,7 @@ Press **Ctrl+/** in the app for the full list. The most used:
 | Ctrl+L, Ctrl+E, Ctrl+R, Ctrl+J | Align left, center, right, justify |
 | Ctrl+Shift+8 / 7 / L | Bulleted list / numbered list / checklist |
 | Ctrl+Alt+1 / 2 / 3 / 0 | Title / heading / subheading / body |
-| Ctrl+K | Link (Ctrl+click a link to open it) |
+| Ctrl+K | Link (click a link to open it; right-click it to edit) |
 | Ctrl+Alt+T | Insert table |
 | Ctrl+Shift+P | Pin note |
 | Ctrl+Shift+K | Open or close the last quick tool |
@@ -42,7 +42,7 @@ Right-click anywhere for the app's own menus: formatting and tables in a note, p
 
 - **Fonts:** the toolbar's font menu lists a few Google Fonts and every font installed on this PC. A Google Font downloads only when a note uses it; without internet the text falls back to a system font.
 - **Quick tools** (Quick Tools in the sidebar, or Ctrl+Shift+K for the last one used): calculator, color codes with tints and shades, Tailwind CSS v4 colors (every family and shade, with hex, OKLCH, RGB and HSL), screen color picker (click any pixel on any screen), clipboard history (last 50 text copies), password generator, currency converter (INR, USD, EUR, SGD on ECB reference rates), screen snip (opens Windows' own snipping overlay; the image goes to the Windows clipboard), screen measure (a full-screen overlay with measuring lines, rulers and a grid in px, cm or inches; it's a separate window that exists only while you measure), date calculator (days between dates, calendar and work hours in a month, Monday to Friday at 8 hours) and world clock (India, Bahrain, Singapore and every US time zone). One tool shows at a time and only that one is loaded. Everything stays in memory: nothing is saved with your notes, in backups or in JSON exports, nothing is read back later, and it is gone when the app quits. New tools are added in `src/tools/registry.tsx`.
-- **Color codes in notes:** hex (`#f50`, `#ff9900`), `rgb()`/`rgba()` and `hsl()`/`hsla()` codes show on their own colour as you type. This is display only; nothing extra is saved. A colour code like `#ff9900` is not treated as a #tag, while words like `#cafe` still are.
+- **Color codes in notes:** hex (`#f50`, `#ff9900`), `rgb()`/`rgba()` and `hsl()`/`hsla()` codes show on their own colour as you type. This is display only; nothing extra is saved. Right-click a colour code for Insert Tints & Shades, which adds a table of its tints and shades below it. A colour code like `#ff9900` is not treated as a #tag, while words like `#cafe` still are.
 - **Tray:** minimizing hides the window to the notification area. Click the tray icon to bring it back, or right-click it for New Note and Quit. Closing the window still quits.
 
 ## Search, backup and export

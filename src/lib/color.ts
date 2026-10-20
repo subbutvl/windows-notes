@@ -101,3 +101,10 @@ export function parseColorCode(code: string): { css: string; fg: string | null }
   const css = `rgba(${rgb.map(Math.round).join(", ")}, ${+alpha.toFixed(3)})`;
   return { css, fg: alpha >= 0.5 ? readableOn(rgbToHex(rgb)) : null };
 }
+
+/** A colour code from a note as "#rrggbb" (alpha dropped), or null. */
+export function colorCodeToHex(code: string): string | null {
+  const parsed = parseColorCode(code);
+  const m = parsed && /rgba\((\d+), (\d+), (\d+)/.exec(parsed.css);
+  return m ? rgbToHex([+m[1], +m[2], +m[3]]) : null;
+}

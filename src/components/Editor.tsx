@@ -3,11 +3,12 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent, useEditor, type Editor as TiptapEditor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { editorMenu } from "../editor/commands";
+import { colorCodeAt } from "../editor/colorCodes";
 import { INSERT_TEXT_EVENT, LINK_REQUEST_EVENT, createExtensions } from "../editor/extensions";
 import { LinkDialog } from "../editor/LinkDialog";
 import { Toolbar } from "../editor/Toolbar";
 import { api } from "../lib/api";
-import { isColorHex } from "../lib/color";
+import { colorCodeToHex, isColorHex } from "../lib/color";
 import { longDate } from "../lib/dates";
 import { loadFontsIn } from "../lib/fonts";
 import { openContextMenu } from "../lib/menu";
@@ -18,10 +19,20 @@ import { PinIcon, RestoreIcon, TrashIcon } from "./Icons";
 
 const inTauri = "__TAURI_INTERNALS__" in window;
 
-/** Ctrl+click opens a link in the default browser; links never load inside the app. */
+/** Clicking a link opens it in the default browser; links never load inside the app. */
 function openLink(href: string) {
-  if (inTauri) openUrl(href).catch((e) => useNotes.setState({ error: String(e) }));
-  else window.open(href, "_blank", "noopener");
+  // "www.example.com" has no scheme; treat it as a web address.
+  const url = /^[a-z][a-z0-9+.-]*:/i.test(href) ? href : `https://${href}`;
+  if (inTauri) openUrl(url).catch((e) => useNotes.setState({ error: `Couldn't open ${url}: ${e}` }));
+  else window.open(url, "_blank", "noopener");
+}
+
+/** The colour code under a right-click, as hex plus its position, for the editor menu. */
+function colorUnderPointer(editor: TiptapEditor, x: number, y: number) {
+  const hit = editor.view.posAtCoords({ left: x, top: y });
+  const found = hit && colorCodeAt(editor.state.doc, hit.pos);
+  const hex = found && colorCodeToHex(found.code);
+  return found && hex ? { hex, pos: found.from } : null;
 }
 
 const SAVE_DELAY_MS = 400;
@@ -84,7 +95,9 @@ export function Editor() {
           const anchor = (event.target as HTMLElement).closest("a[href]");
           if (!anchor) return false;
           event.preventDefault();
-          if (event.ctrlKey) openLink(anchor.getAttribute("href")!);
+          // A drag that ends on a link is a text selection, not a click.
+          if (!window.getSelection()?.isCollapsed) return false;
+          openLink(anchor.getAttribute("href")!);
           return true;
         },
       },
@@ -202,7 +215,7 @@ export function Editor() {
       <div className="editor-scroll" hidden={!summary}>
         <article className="editor-page">
           {summary && <div className="editor-date">{longDate(summary.updatedAt)}</div>}
-          <EditorContent editor={editor} onContextMenu={(e) => editor && openContextMenu(e, editorMenu(editor))} />
+          <EditorContent editor={editor} onContextMenu={(e) => editor && openContextMenu(e, editorMenu(editor, colorUnderPointer(editor, e.clientX, e.clientY)))} />
         </article>
       </div>
       {!summary && <div className="editor-empty">No note selected</div>}

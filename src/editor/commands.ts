@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/react";
 import { copySelection, readClipboardText } from "../lib/clipboard";
 import { SEPARATOR, type MenuEntry } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
+import { tintsAndShades } from "../lib/color";
 import { toggleCodeBlock } from "./codeBlock";
 import { HIGHLIGHT_COLORS, LINK_REQUEST_EVENT, TEXT_COLORS } from "./extensions";
 
@@ -53,7 +54,31 @@ export function tableMenu(e: Editor): MenuEntry[] {
 }
 
 /** Right-click menu inside the note text. */
-export function editorMenu(e: Editor): MenuEntry[] {
+const cell = (type: "tableHeader" | "tableCell", text: string) => ({ type, content: [{ type: "paragraph", content: text ? [{ type: "text", text }] : [] }] });
+
+/**
+ * Adds a table of tints (mixed with white) and shades (mixed with black) of a
+ * colour after the block at `pos`. The hex codes show on their own colour and
+ * can be selected and copied like any text.
+ */
+export function insertTintsAndShades(e: Editor, hex: string, pos: number) {
+  const { tints, shades } = tintsAndShades(hex);
+  const label = hex.toUpperCase();
+  const rows = tints.map((t, i) => ({ type: "tableRow", content: [cell("tableCell", `${t.step}%`), cell("tableCell", t.hex.toUpperCase()), cell("tableCell", shades[i].hex.toUpperCase())] }));
+  const $pos = e.state.doc.resolve(pos);
+  const after = $pos.depth > 0 ? $pos.after(1) : e.state.doc.content.size;
+  e.chain()
+    .focus()
+    .insertContentAt(after, [
+      { type: "paragraph", content: [{ type: "text", text: `Tints and shades of ${label}` }] },
+      { type: "table", content: [{ type: "tableRow", content: [cell("tableHeader", "Mix"), cell("tableHeader", "Tint (+ white)"), cell("tableHeader", "Shade (+ black)")] }, ...rows] },
+      { type: "paragraph" },
+    ])
+    .run();
+}
+
+/** `colorCode`: a colour code under the pointer, offered as "Insert Tints & Shades". */
+export function editorMenu(e: Editor, colorCode?: { hex: string; pos: number } | null): MenuEntry[] {
   const c = () => e.chain().focus();
   const hasSelection = !e.state.selection.empty;
   const editable = e.isEditable;
@@ -68,6 +93,8 @@ export function editorMenu(e: Editor): MenuEntry[] {
   }
 
   return [
+    colorCode && { label: `Insert Tints & Shades of ${colorCode.hex.toUpperCase()}`, onSelect: () => insertTintsAndShades(e, colorCode.hex, colorCode.pos) },
+    colorCode && SEPARATOR,
     { label: "Cut", shortcut: KEYS.cut, disabled: !hasSelection, onSelect: () => (e.commands.focus(), copySelection(true)) },
     { label: "Copy", shortcut: KEYS.copy, disabled: !hasSelection, onSelect: () => (e.commands.focus(), copySelection()) },
     { label: "Paste", shortcut: KEYS.paste, onSelect: () => pastePlainText(e) },
