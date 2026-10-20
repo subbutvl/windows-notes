@@ -22,7 +22,9 @@ import {
   UndoIcon,
 } from "../components/Icons";
 import { Popover, keepFocus } from "../components/Popover";
+import { fontName, fontStack } from "../lib/fonts";
 import { KEYS } from "../lib/shortcuts";
+import { FontPicker } from "./FontPicker";
 import { TEXT_STYLES, currentStyle, requestLink, tableMenu } from "./commands";
 import { DEFAULT_FONT_SIZE, FONT_SIZES, FONT_WEIGHTS, HIGHLIGHT_COLORS, TEXT_COLORS } from "./extensions";
 
@@ -130,6 +132,7 @@ export function Toolbar({ editor, children }: { editor: Editor; children?: React
       editable: e.isEditable,
       style: currentStyle(e),
       fontSize: (e.getAttributes("textStyle").fontSize as string | undefined) ?? null,
+      font: fontName(e.getAttributes("textStyle").fontFamily as string | undefined),
       fontWeight: (e.getAttributes("textStyle").fontWeight as string | undefined) ?? null,
       color: (e.getAttributes("textStyle").color as string | undefined) ?? undefined,
       highlight: e.isActive("highlight") ? ((e.getAttributes("highlight").color as string | undefined) ?? HIGHLIGHT_COLORS[0].value) : undefined,
@@ -174,6 +177,18 @@ export function Toolbar({ editor, children }: { editor: Editor; children?: React
               <MenuRow key={t.id} label={t.label} shortcut={t.shortcut} checked={s.style === t.id} onClick={() => (t.run(editor), close())} />
             ))
           }
+        </Popover>
+        <Popover label="Font" title={`Font: ${s.font ?? "Default"}`} button={<span className="tool-text font-name">{s.font ?? "Default"}</span>}>
+          {(close) => (
+            <FontPicker
+              current={s.font}
+              onPick={(name) => {
+                if (name) c().setFontFamily(fontStack(name)).run();
+                else c().unsetFontFamily().run();
+                close();
+              }}
+            />
+          )}
         </Popover>
         <Popover label="Font size" title={`Font size (${KEYS.biggerText} / ${KEYS.smallerText})`} wide button={<span className="tool-text">{sizeLabel}</span>}>
           {(close) => (

@@ -6,6 +6,7 @@ export const KEYS = {
   pin: "Ctrl+Shift+P",
   toggleTheme: "Ctrl+Shift+D",
   shortcuts: "Ctrl+/",
+  tools: "Ctrl+Shift+K",
   deleteNote: "Delete",
 
   undo: "Ctrl+Z",
@@ -59,6 +60,7 @@ export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
       ["Delete note (in the list)", KEYS.deleteNote],
       ["Previous or next note", "Up / Down"],
       ["Switch light and dark", KEYS.toggleTheme],
+      ["Calculator, color and clipboard tools", KEYS.tools],
       ["Show shortcuts", KEYS.shortcuts],
     ],
   },

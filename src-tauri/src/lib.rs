@@ -1,8 +1,11 @@
+mod fonts;
 mod store;
 
 use std::sync::Mutex;
 use store::{Folder, Library, Note, NoteSummary, NoteUpdate, Store};
-use tauri::{Manager, State};
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
 
 struct AppState(Mutex<Store>);
 
@@ -73,6 +76,52 @@ fn delete_folder(state: State<AppState>, id: String) -> CmdResult<Library> {
     with_store(&state, |s| s.delete_folder(&id))
 }
 
+#[tauri::command]
+async fn list_system_fonts() -> Vec<String> {
+    fonts::system_fonts()
+}
+
+fn show_main(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+/// The notification-area icon: left click brings the window back, right click
+/// opens a small menu.
+fn create_tray(app: &tauri::App) -> tauri::Result<()> {
+    let show = MenuItem::with_id(app, "show", "Show Windows Notes", true, None::<&str>)?;
+    let new_note = MenuItem::with_id(app, "new-note", "New Note", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show, &new_note, &PredefinedMenuItem::separator(app)?, &quit])?;
+
+    let mut tray = TrayIconBuilder::with_id("main")
+        .tooltip("Windows Notes")
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "show" => show_main(app),
+            "new-note" => {
+                show_main(app);
+                let _ = app.emit("tray-new-note", ());
+            }
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
+                show_main(tray.app_handle());
+            }
+        });
+    if let Some(icon) = app.default_window_icon() {
+        tray = tray.icon(icon.clone());
+    }
+    tray.build(app)?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -83,7 +132,16 @@ pub fn run() {
             let root = app.path().data_dir()?.join("WindowsNotes");
             let store = Store::open(root)?;
             app.manage(AppState(Mutex::new(store)));
+            create_tray(app)?;
             Ok(())
+        })
+        // Minimizing tucks the window into the notification area; closing still quits.
+        .on_window_event(|window, event| {
+            if let WindowEvent::Resized(_) = event {
+                if window.is_minimized().unwrap_or(false) {
+                    let _ = window.hide();
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             get_library,
@@ -97,7 +155,8 @@ pub fn run() {
             purge_note,
             create_folder,
             rename_folder,
-            delete_folder
+            delete_folder,
+            list_system_fonts
         ])
         .run(tauri::generate_context!())
         .expect("error while running Windows Notes");

@@ -4,7 +4,8 @@ import { KEYS } from "../lib/shortcuts";
 import { useNotes } from "../lib/store";
 import type { Folder, View } from "../lib/types";
 import type { ThemeChoice } from "../lib/theme";
-import { FolderIcon, KeyboardIcon, MonitorIcon, MoonIcon, NotesIcon, PinIcon, PlusIcon, SunIcon, TrashIcon } from "./Icons";
+import { useTools } from "../lib/tools";
+import { FolderIcon, KeyboardIcon, MonitorIcon, MoonIcon, NotesIcon, PinIcon, PlusIcon, SunIcon, ToolsIcon, TrashIcon } from "./Icons";
 
 /** MIME type used when a note row is dragged onto a folder. */
 export const NOTE_DRAG_TYPE = "application/x-windows-notes-note";
@@ -72,6 +73,7 @@ export function Sidebar({ theme, onCycleTheme }: { theme: ThemeChoice; onCycleTh
   const notes = useNotes((s) => s.notes);
   const view = useNotes((s) => s.view);
   const folderDraft = useNotes((s) => s.folderDraft);
+  const toolsOpen = useTools((s) => s.open);
   const setView = useNotes((s) => s.setView);
   const newNote = useNotes((s) => s.newNote);
   const moveNote = useNotes((s) => s.moveNote);
@@ -228,6 +230,15 @@ export function Sidebar({ theme, onCycleTheme }: { theme: ThemeChoice; onCycleTh
       <button className="side-action" onClick={() => setDraft(null)} title={`New folder (${KEYS.newFolder})`}>
         <PlusIcon />
         <span>New Folder</span>
+      </button>
+      <button
+        className={`side-action${toolsOpen ? " is-active" : ""}`}
+        aria-pressed={toolsOpen}
+        onClick={() => useTools.getState().toggle()}
+        title={`Calculator, color and clipboard (${KEYS.tools})`}
+      >
+        <ToolsIcon />
+        <span>Quick Tools</span>
       </button>
       <button className="side-action" onClick={onCycleTheme} title={`Change theme (${KEYS.toggleTheme})`} aria-label={`Theme: ${themeLabel[theme]}. Click to change.`}>
         {theme === "light" ? <SunIcon /> : theme === "dark" ? <MoonIcon /> : <MonitorIcon />}

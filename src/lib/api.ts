@@ -21,6 +21,7 @@ export interface Api {
   createFolder(name: string, parentId: string | null): Promise<Folder>;
   renameFolder(id: string, name: string): Promise<Folder>;
   deleteFolder(id: string): Promise<Library>;
+  systemFonts(): Promise<string[]>;
 }
 
 const tauriApi: Api = {
@@ -36,6 +37,7 @@ const tauriApi: Api = {
   createFolder: (name, parentId) => invoke("create_folder", { name, parentId }),
   renameFolder: (id, name) => invoke("rename_folder", { id, name }),
   deleteFolder: (id) => invoke("delete_folder", { id }),
+  systemFonts: () => invoke("list_system_fonts"),
 };
 
 function createMockApi(): Api {
@@ -122,6 +124,9 @@ function createMockApi(): Api {
       for (const n of notes.values()) if (doomed.has(n.folderId) && !n.deletedAt) await patch(n.id, { deletedAt: now(), pinned: false });
       for (let i = folders.length - 1; i >= 0; i--) if (doomed.has(folders[i].id)) folders.splice(i, 1);
       return this.getLibrary();
+    },
+    async systemFonts() {
+      return ["Arial", "Calibri", "Cambria", "Candara", "Consolas", "Georgia", "Segoe UI", "Tahoma", "Times New Roman", "Verdana"];
     },
   };
 }

@@ -3,11 +3,12 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent, useEditor, type Editor as TiptapEditor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { editorMenu } from "../editor/commands";
-import { LINK_REQUEST_EVENT, createExtensions } from "../editor/extensions";
+import { INSERT_TEXT_EVENT, LINK_REQUEST_EVENT, createExtensions } from "../editor/extensions";
 import { LinkDialog } from "../editor/LinkDialog";
 import { Toolbar } from "../editor/Toolbar";
 import { api } from "../lib/api";
 import { longDate } from "../lib/dates";
+import { loadFontsIn } from "../lib/fonts";
 import { openContextMenu } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
 import { useNotes } from "../lib/store";
@@ -109,6 +110,7 @@ export function Editor() {
     api.loadNote(selectedId).then(
       (note) => {
         if (cancelled) return;
+        loadFontsIn(note.content);
         let doc;
         try {
           doc = editor.schema.nodeFromJSON(note.content);
@@ -145,6 +147,18 @@ export function Editor() {
     return () => window.removeEventListener(LINK_REQUEST_EVENT, onLink);
   }, [editor]);
 
+  // Text sent from the quick tools lands at the cursor as plain text.
+  useEffect(() => {
+    const onInsert = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      if (!editor?.isEditable || !loadedId.current || !text) return;
+      editor.commands.focus();
+      editor.view.pasteText(text);
+    };
+    window.addEventListener(INSERT_TEXT_EVENT, onInsert);
+    return () => window.removeEventListener(INSERT_TEXT_EVENT, onInsert);
+  }, [editor]);
+
   const deleted = !!summary?.deletedAt;
 
   return (
@@ -167,6 +181,7 @@ export function Editor() {
               </button>
             </>
           )}
+
         </Toolbar>
       )}
       {linkOpen && editor && <LinkDialog editor={editor} onClose={() => setLinkOpen(false)} />}

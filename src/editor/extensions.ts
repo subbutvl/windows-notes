@@ -55,6 +55,10 @@ declare module "@tiptap/core" {
       unsetFontSize: () => ReturnType;
       stepFontSize: (direction: 1 | -1) => ReturnType;
     };
+    fontFamily: {
+      setFontFamily: (family: string) => ReturnType;
+      unsetFontFamily: () => ReturnType;
+    };
     fontWeight: {
       setFontWeight: (weight: string) => ReturnType;
       unsetFontWeight: () => ReturnType;
@@ -141,6 +145,37 @@ const FontWeight = Extension.create({
   },
 });
 
+/** Adds a `font-family` attribute to the textStyle mark. */
+const FontFamily = Extension.create({
+  name: "fontFamily",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["textStyle"],
+        attributes: {
+          fontFamily: {
+            default: null,
+            parseHTML: (el) => el.style.fontFamily || null,
+            renderHTML: (attrs) => (attrs.fontFamily ? { style: `font-family: ${attrs.fontFamily}` } : {}),
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontFamily:
+        (family) =>
+        ({ chain }) =>
+          chain().setMark("textStyle", { fontFamily: family }).run(),
+      unsetFontFamily:
+        () =>
+        ({ chain }) =>
+          chain().setMark("textStyle", { fontFamily: null }).removeEmptyTextStyle().run(),
+    };
+  },
+});
+
 /** Word-style alignment keys (Ctrl+L/E/R/J) instead of TipTap's Ctrl+Shift ones. */
 const Align = TextAlign.extend({
   addKeyboardShortcuts() {
@@ -164,6 +199,8 @@ const Checklist = TaskList.extend({
 });
 
 export const LINK_REQUEST_EVENT = "windows-notes:link";
+/** Plain text sent from the tools panel to the open note: CustomEvent<string>. */
+export const INSERT_TEXT_EVENT = "windows-notes:insert-text";
 
 /** Shortcuts that don't belong to a single extension. */
 const NoteShortcuts = Extension.create({
@@ -189,6 +226,7 @@ export function createExtensions(): Extensions {
     TextStyle,
     Color,
     FontSize,
+    FontFamily,
     FontWeight,
     Highlight.configure({ multicolor: true }),
     Align,

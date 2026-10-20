@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 import { ContextMenu } from "./components/ContextMenu";
 import { Editor } from "./components/Editor";
@@ -5,11 +6,15 @@ import { CloseIcon } from "./components/Icons";
 import { NoteList } from "./components/NoteList";
 import { ShortcutsDialog } from "./components/ShortcutsDialog";
 import { Sidebar } from "./components/Sidebar";
+import { ToolsPanel } from "./components/ToolsPanel";
 import { copySelection, pasteIntoInput } from "./lib/clipboard";
 import { SEPARATOR, useMenu } from "./lib/menu";
 import { KEYS } from "./lib/shortcuts";
 import { useNotes } from "./lib/store";
 import { useTheme } from "./lib/theme";
+import { useTools, watchClipboard } from "./lib/tools";
+
+const inTauri = "__TAURI_INTERNALS__" in window;
 
 type TextField = HTMLInputElement | HTMLTextAreaElement;
 
@@ -40,6 +45,7 @@ export default function App() {
   const loaded = useNotes((s) => s.loaded);
   const error = useNotes((s) => s.error);
   const showShortcuts = useNotes((s) => s.showShortcuts);
+  const toolsOpen = useTools((s) => s.open);
   const init = useNotes((s) => s.init);
   const { choice, cycle } = useTheme();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -47,6 +53,18 @@ export default function App() {
   useEffect(() => {
     init();
   }, [init]);
+
+  // The clipboard history fills in the background, kept in memory only.
+  useEffect(() => watchClipboard(), []);
+
+  // "New Note" from the notification-area icon.
+  useEffect(() => {
+    if (!inTauri) return;
+    const off = listen("tray-new-note", () => useNotes.getState().newNote());
+    return () => {
+      off.then((f) => f());
+    };
+  }, []);
 
   // Replace the WebView's own right-click menu everywhere. Components that
   // have a menu of their own open it first and stop the event.
@@ -98,6 +116,7 @@ export default function App() {
           <Sidebar theme={choice} onCycleTheme={cycle} />
           <NoteList ref={searchRef} />
           <Editor />
+          {toolsOpen && <ToolsPanel />}
         </div>
       ) : (
         !error && <div className="loading">Loading notes…</div>
