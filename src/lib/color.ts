@@ -44,3 +44,60 @@ export function readableOn(hex: string) {
   const [r, g, b] = hexToRgb(hex);
   return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? "#1d1d1f" : "#ffffff";
 }
+
+/**
+ * True for "#" codes that read as colours rather than #tags: 6 or 8 hex
+ * digits, or 3 or 4 with a digit or one repeated letter (#f50, #fff). Words
+ * like #cafe or #bad stay tags.
+ */
+export function isColorHex(word: string) {
+  if (/^#(?:[0-9a-f]{6}|[0-9a-f]{8})$/i.test(word)) return true;
+  return /^#[0-9a-f]{3,4}$/i.test(word) && (/\d/.test(word) || /^#(.)\1+$/i.test(word));
+}
+
+function hslToRgb(h: number, s: number, l: number): RGB {
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+
+const clamp = (v: number, max: number) => Math.min(max, Math.max(0, v));
+
+/** "50%" → 0.5 × scale, "0.5" → 0.5; anything else → NaN. */
+const num = (part: string, scale: number) =>
+  /^-?\d*\.?\d+%$/.test(part) ? (parseFloat(part) / 100) * scale : /^-?\d*\.?\d+$/.test(part) ? parseFloat(part) : NaN;
+
+/**
+ * Parses a colour code written in a note: #hex, rgb()/rgba() or hsl()/hsla().
+ * Returns the CSS background and a readable text colour (null when the colour
+ * is mostly transparent, so the note's own text colour stays).
+ */
+export function parseColorCode(code: string): { css: string; fg: string | null } | null {
+  let rgb: RGB;
+  let alpha = 1;
+  if (code.startsWith("#")) {
+    if (!isColorHex(code)) return null;
+    let h = code.slice(1);
+    if (h.length <= 4) h = [...h].map((c) => c + c).join("");
+    rgb = hexToRgb(`#${h}`);
+    if (h.length === 8) alpha = parseInt(h.slice(6), 16) / 255;
+  } else {
+    const m = /^(rgba?|hsla?)\(\s*([^()]*?)\s*\)$/i.exec(code);
+    if (!m) return null;
+    const parts = m[2].split(/\s*[,/]\s*|\s+/);
+    if (parts.length < 3 || parts.length > 4) return null;
+    if (parts.length === 4) alpha = clamp(num(parts[3], 1), 1);
+    if (m[1].toLowerCase().startsWith("rgb")) {
+      rgb = parts.slice(0, 3).map((p) => clamp(num(p, 255), 255)) as RGB;
+    } else {
+      const h = num(parts[0].replace(/deg$/i, ""), 360);
+      const s = parts[1].endsWith("%") ? parseFloat(parts[1]) / 100 : NaN;
+      const l = parts[2].endsWith("%") ? parseFloat(parts[2]) / 100 : NaN;
+      rgb = hslToRgb(((h % 360) + 360) % 360, clamp(s, 1), clamp(l, 1));
+    }
+    if ([...rgb, alpha].some(Number.isNaN)) return null;
+  }
+  const css = `rgba(${rgb.map(Math.round).join(", ")}, ${+alpha.toFixed(3)})`;
+  return { css, fg: alpha >= 0.5 ? readableOn(rgbToHex(rgb)) : null };
+}

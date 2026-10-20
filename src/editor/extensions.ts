@@ -13,6 +13,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import TextStyle from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import StarterKit from "@tiptap/starter-kit";
+import { ColorCodes } from "./colorCodes";
 
 export const FONT_SIZES = [11, 12, 13, 14, 15, 16, 18, 20, 24, 28, 32, 36, 48];
 export const DEFAULT_FONT_SIZE = 15;
@@ -239,5 +240,6 @@ export function createExtensions(): Extensions {
     Link.configure({ openOnClick: false, autolink: true, linkOnPaste: true, HTMLAttributes: { rel: "noopener noreferrer" } }),
     Placeholder.configure({ placeholder: ({ pos }) => (pos === 0 ? "Title" : "") }),
     NoteShortcuts,
+    ColorCodes,
   ];
 }

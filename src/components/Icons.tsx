@@ -292,6 +292,15 @@ export const PaletteIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const SwatchesIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="8" height="8" rx="1.5" />
+    <rect x="13" y="3" width="8" height="8" rx="1.5" />
+    <rect x="3" y="13" width="8" height="8" rx="1.5" />
+    <rect x="13" y="13" width="8" height="8" rx="1.5" />
+  </Icon>
+);
+
 export const ClipboardIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="5" y="4" width="14" height="17" rx="2" />

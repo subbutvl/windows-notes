@@ -7,6 +7,7 @@ import { INSERT_TEXT_EVENT, LINK_REQUEST_EVENT, createExtensions } from "../edit
 import { LinkDialog } from "../editor/LinkDialog";
 import { Toolbar } from "../editor/Toolbar";
 import { api } from "../lib/api";
+import { isColorHex } from "../lib/color";
 import { longDate } from "../lib/dates";
 import { loadFontsIn } from "../lib/fonts";
 import { openContextMenu } from "../lib/menu";
@@ -27,7 +28,7 @@ const SAVE_DELAY_MS = 400;
 const SNIPPET_LENGTH = 120;
 const TAG_PATTERN = /(?:^|\s)#([\p{L}\p{N}_-]+)/gu;
 
-/** Title = first non-empty block, snippet = the text after it, tags = #words. */
+/** Title = first non-empty block, snippet = the text after it, tags = #words (colour codes like #ff9900 aren't tags). */
 function extractMeta(editor: TiptapEditor) {
   const blocks: string[] = [];
   editor.state.doc.forEach((node) => {
@@ -36,7 +37,7 @@ function extractMeta(editor: TiptapEditor) {
   });
   const fullText = editor.state.doc.textBetween(0, editor.state.doc.content.size, "\n", " ");
   const tags = new Set<string>();
-  for (const m of fullText.matchAll(TAG_PATTERN)) tags.add(m[1].toLowerCase());
+  for (const m of fullText.matchAll(TAG_PATTERN)) if (!isColorHex(`#${m[1]}`)) tags.add(m[1].toLowerCase());
   return {
     title: (blocks[0] ?? "").slice(0, 200),
     snippet: blocks.slice(1).join(" ").slice(0, SNIPPET_LENGTH),

@@ -1553,6 +1553,55 @@ button {
   font-weight: 600;
 }
 
+/* Tailwind colors */
+.tw-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tw-row {
+  display: grid;
+  grid-template-columns: 54px repeat(11, 1fr);
+  gap: 2px;
+  align-items: center;
+}
+
+.tw-head span {
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.tw-name {
+  font-size: 11px;
+  text-transform: capitalize;
+  color: var(--muted);
+}
+
+.tw-swatch {
+  height: 20px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.tw-swatch:hover,
+.tw-swatch.is-picked {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+/* Colour codes typed in a note */
+.ProseMirror .color-code {
+  padding: 0 2px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 /* Password */
 .password-box {
   display: flex;
