@@ -394,3 +394,75 @@ export const CloudIcon = (p: IconProps) => (
     <path d="M12 15V10M9.8 12.2 12 10l2.2 2.2" />
   </Icon>
 );
+
+export const TextCountIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h10M4 11h10M4 16h6" />
+    <path d="M17 13v6M15 15l2-2 2 2" />
+  </Icon>
+);
+
+export const CaseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 18l4-11 4 11M4.5 14h5" />
+    <path d="M14 13.5a2.5 2.5 0 1 0 5 0v-2.5M19 11v7M19 13.5a2.5 2.5 0 1 1-5 0" />
+  </Icon>
+);
+
+export const WhitespaceIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 7h16M4 12h7M4 17h16" />
+    <path d="M14 10l4 4M18 10l-4 4" />
+  </Icon>
+);
+
+export const UnitsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 8h13l-3-3M20 16H7l3 3" />
+  </Icon>
+);
+
+export const CameraIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </Icon>
+);
+
+export const ImageIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3.5" y="5" width="17" height="14" rx="2" />
+    <circle cx="9" cy="10" r="1.6" />
+    <path d="M20.5 16l-5-5-8 8" />
+  </Icon>
+);
+
+export const AppIconIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="4" y="4" width="16" height="16" rx="4.5" />
+    <path d="M9 12h6M12 9v6" />
+  </Icon>
+);
+
+export const SplashIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <circle cx="12" cy="11" r="2.5" />
+    <path d="M8.5 16h7" />
+  </Icon>
+);
+
+export const ThumbnailIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="6" width="18" height="12" rx="2" />
+    <path d="M10 9.5v5l4.5-2.5z" />
+  </Icon>
+);
+
+export const AudioIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 18V6l10-2v12" />
+    <circle cx="6.5" cy="18" r="2.5" />
+    <circle cx="16.5" cy="16" r="2.5" />
+  </Icon>
+);

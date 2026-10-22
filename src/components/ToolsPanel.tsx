@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { KEYS } from "../lib/shortcuts";
 import { useTools } from "../lib/tools";
 import { TOOLS, openToolsMenu } from "../tools/registry";
@@ -11,7 +12,7 @@ export function ToolsPanel() {
   const tool = TOOLS.find((t) => t.id === id) ?? TOOLS[0];
 
   return (
-    <aside className="tools-panel" aria-label={tool.label}>
+    <aside className={`tools-panel${tool.wide ? " is-wide" : ""}`} aria-label={tool.label}>
       <div className="tools-header">
         <button className="tools-switch" title="Switch tool" aria-haspopup="menu" onClick={(e) => openToolsMenu(e.currentTarget, "below")}>
           {tool.icon}
@@ -23,7 +24,7 @@ export function ToolsPanel() {
         </button>
       </div>
       <div className="tools-scroll" key={tool.id}>
-        {tool.render(copy)}
+        <Suspense fallback={<p className="tool-empty">Loading…</p>}>{tool.render(copy)}</Suspense>
       </div>
       <div className={`tools-toast${copied ? " is-visible" : ""}`} role="status">
         {copied ? (copied.length > 24 ? "Copied" : `Copied ${copied}`) : ""}

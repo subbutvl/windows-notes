@@ -53,7 +53,10 @@ export const KEYS = {
   nextCell: "Tab",
 } as const;
 
-/** Alt+letter opens each quick tool (pressing it again closes it). */
+/**
+ * Alt+letter opens each quick tool (pressing it again closes it). Alt+R and
+ * Alt+Z are left alone: NVIDIA's overlay uses them system-wide.
+ */
 export const TOOL_KEYS: Record<ToolId, string> = {
   calculator: "Alt+C",
   color: "Alt+O",
@@ -66,9 +69,14 @@ export const TOOL_KEYS: Record<ToolId, string> = {
   measure: "Alt+M",
   dates: "Alt+D",
   clock: "Alt+T",
+  textCount: "Alt+X",
+  textCase: "Alt+E",
+  whitespace: "Alt+Q",
+  units: "Alt+N",
+  photo: "Alt+F",
 };
 
-/** The quick tool for an Alt+letter key press (by physical key, so any keyboard layout works). */
+/** The quick tool for an Alt+letter key press, given as a key code like "KeyX". */
 export function toolForKey(code: string): ToolId | undefined {
   const letter = /^Key([A-Z])$/.exec(code)?.[1];
   return (Object.keys(TOOL_KEYS) as ToolId[]).find((id) => TOOL_KEYS[id] === `Alt+${letter}`);

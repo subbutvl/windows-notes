@@ -1,6 +1,7 @@
 mod drive;
 mod export;
 mod fonts;
+mod keys;
 mod measure;
 mod store;
 
@@ -299,6 +300,9 @@ pub fn run() {
             app.manage(DriveState(Arc::new(Mutex::new(Drive::new(store.root())))));
             app.manage(AppState(Arc::new(Mutex::new(store))));
             create_tray(app)?;
+            if let Some(main) = app.get_webview_window("main") {
+                keys::watch_alt_letters(&main);
+            }
             Ok(())
         })
         // Minimizing tucks the window into the notification area; closing still quits.

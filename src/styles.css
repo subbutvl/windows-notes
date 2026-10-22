@@ -2296,3 +2296,158 @@ html.measure-overlay body {
     break-inside: avoid;
   }
 }
+
+/* Wider quick tools (text and image tools) */
+.tools-panel.is-wide {
+  width: 440px;
+}
+
+/* Text tools */
+.text-tool-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tool-textarea {
+  width: 100%;
+  min-height: 52vh;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--editor-bg);
+  color: var(--text);
+  font: 14px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  resize: vertical;
+  overflow: auto;
+  outline: none;
+  user-select: text;
+}
+
+.tool-textarea:focus {
+  border-color: var(--accent-fill);
+}
+
+.text-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.text-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--editor-bg);
+}
+
+.text-stat strong {
+  font-size: 17px;
+}
+
+.text-stat span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.text-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.text-buttons .chip {
+  flex: 0 0 auto;
+  padding: 0 12px;
+}
+
+.chip:disabled {
+  opacity: 0.5;
+}
+
+.text-removed {
+  margin-right: auto;
+  align-self: center;
+}
+
+/* Unit converter */
+.unit-from {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 6px;
+}
+
+.unit-results {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--editor-bg);
+}
+
+.unit-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.unit-row:first-child {
+  border-top: 0;
+}
+
+.unit-row strong {
+  color: var(--text);
+  font-size: 13px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.unit-row small {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.unit-row:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.unit-row.is-from {
+  background: var(--side-selected);
+}
+
+/* Photography */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.photo-grid.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.photo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.photo-sub {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}

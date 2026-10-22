@@ -68,6 +68,19 @@ export default function App() {
     };
   }, []);
 
+  // Alt+letter opens a quick tool. WebView2 keeps Alt keys from the page, so the
+  // native side catches them and sends the letter.
+  useEffect(() => {
+    if (!inTauri) return;
+    const off = listen<string>("alt-key", (e) => {
+      const tool = toolForKey(`Key${e.payload}`);
+      if (tool) useTools.getState().toggle(tool);
+    });
+    return () => {
+      off.then((f) => f());
+    };
+  }, []);
+
   // Replace the WebView's own right-click menu everywhere. Components that
   // have a menu of their own open it first and stop the event.
   useEffect(() => {
