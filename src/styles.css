@@ -777,13 +777,41 @@ button {
   font-weight: 600;
 }
 
+/* Lightbox: the app behind fades and blurs, the dialog eases in on top. */
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
   display: grid;
   place-items: center;
   z-index: 90;
+  animation: backdrop-in 160ms ease-out;
+}
+
+.dialog-backdrop > .dialog {
+  animation: dialog-in 180ms ease-out;
+}
+
+@keyframes backdrop-in {
+  from {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-backdrop,
+  .dialog-backdrop > .dialog {
+    animation: none;
+  }
 }
 
 .dialog {
@@ -793,7 +821,8 @@ button {
   padding: 20px 24px 24px;
   border-radius: 12px;
   background: var(--editor-bg);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
   outline: none;
 }
 
