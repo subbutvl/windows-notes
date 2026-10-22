@@ -2240,3 +2240,59 @@ html.measure-overlay body {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * Export as PDF prints the window with these rules: only the open note shows,
+ * in the light theme, flowing across as many pages as it needs.
+ */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --editor-bg: #ffffff;
+    --chip-bg: #ffffff;
+    --text: #1d1d1f;
+    --muted: #5e5e66;
+    --border: #e2e1e8;
+    --accent: #b07d00;
+    --accent-fill: #d9a400;
+    color-scheme: light;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+
+  html,
+  body,
+  #root,
+  .app,
+  .panes,
+  .editor-pane,
+  .editor-scroll {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: #ffffff;
+  }
+
+  .app > :not(.panes),
+  .panes > :not(.editor-pane),
+  .editor-pane > :not(.editor-scroll) {
+    display: none !important;
+  }
+
+  .editor-page {
+    padding: 0;
+  }
+
+  .note-body {
+    min-height: 0;
+    caret-color: transparent;
+  }
+
+  .note-body table,
+  .note-body pre,
+  .note-body img {
+    break-inside: avoid;
+  }
+}

@@ -252,6 +252,13 @@ export const ChevronDownIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ExportIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 15V4M8 8l4-4 4 4" />
+    <path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
+  </Icon>
+);
+
 export const MoreIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="5" cy="12" r="1.3" fill="currentColor" />

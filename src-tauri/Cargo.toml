@@ -16,6 +16,7 @@ tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
 ureq = { version = "2.12", features = ["json"] }
 keyring = { version = "3", features = ["windows-native"] }
 sha2 = "0.10"
@@ -27,6 +28,8 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
+webview2-com = "0.39"
+windows = "0.62"
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_HiDpi"] }
 
 [profile.release]

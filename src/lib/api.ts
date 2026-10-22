@@ -28,6 +28,8 @@ export interface Api {
   screenInfo(): Promise<ScreenInfo>;
   searchNotes(query: string): Promise<SearchHit[]>;
   exportLibrary(path: string): Promise<void>;
+  exportNotePdf(path: string): Promise<void>;
+  exportNoteHtml(path: string, html: string): Promise<void>;
   importLibrary(path: string): Promise<ImportReport>;
   driveStatus(): Promise<DriveStatus>;
   driveSetClient(clientId: string, clientSecret: string): Promise<DriveStatus>;
@@ -58,6 +60,8 @@ const tauriApi: Api = {
   screenInfo: () => invoke("screen_info"),
   searchNotes: (query) => invoke("search_notes", { query }),
   exportLibrary: (path) => invoke("export_library", { path }),
+  exportNotePdf: (path) => invoke("export_note_pdf", { path }),
+  exportNoteHtml: (path, html) => invoke("export_note_html", { path, html }),
   importLibrary: (path) => invoke("import_library", { path }),
   driveStatus: () => invoke("drive_status"),
   driveSetClient: (clientId, clientSecret) => invoke("drive_set_client", { clientId, clientSecret }),
@@ -173,6 +177,12 @@ function createMockApi(): Api {
         .map((n) => ({ id: n.id, snippet: null }));
     },
     exportLibrary: async () => {
+      throw desktopOnly();
+    },
+    exportNotePdf: async () => {
+      throw desktopOnly();
+    },
+    exportNoteHtml: async () => {
       throw desktopOnly();
     },
     importLibrary: async () => {

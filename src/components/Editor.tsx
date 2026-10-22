@@ -9,13 +9,14 @@ import { LinkDialog } from "../editor/LinkDialog";
 import { Toolbar } from "../editor/Toolbar";
 import { api } from "../lib/api";
 import { colorCodeToHex, isColorHex } from "../lib/color";
+import { exportNote, type ExportKind } from "../lib/exportNote";
 import { longDate } from "../lib/dates";
 import { loadFontsIn } from "../lib/fonts";
 import { openContextMenu } from "../lib/menu";
 import { KEYS } from "../lib/shortcuts";
 import { useNotes } from "../lib/store";
 import type { DocJSON } from "../lib/types";
-import { PinIcon, RestoreIcon, TrashIcon } from "./Icons";
+import { ExportIcon, PinIcon, RestoreIcon, TrashIcon } from "./Icons";
 
 const inTauri = "__TAURI_INTERNALS__" in window;
 
@@ -175,6 +176,14 @@ export function Editor() {
 
   const deleted = !!summary?.deletedAt;
 
+  const runExport = (kind: ExportKind) => {
+    if (!editor || !summary) return;
+    saveNow();
+    exportNote(editor, kind, summary.title, longDate(summary.updatedAt)).catch((e) =>
+      useNotes.setState({ error: `Couldn't export the note: ${e}` }),
+    );
+  };
+
   return (
     <main className="editor-pane">
       {editor && (
@@ -189,6 +198,19 @@ export function Editor() {
                 onClick={() => togglePin(summary.id)}
               >
                 <PinIcon />
+              </button>
+              <button
+                className="tool-button"
+                aria-label="Export note"
+                title="Export note as PDF or HTML"
+                onClick={(e) =>
+                  openContextMenu(e, [
+                    { label: "Export as PDF…", onSelect: () => runExport("pdf") },
+                    { label: "Export as HTML…", onSelect: () => runExport("html") },
+                  ])
+                }
+              >
+                <ExportIcon />
               </button>
               <button className="tool-button" aria-label="Delete note" title="Delete note" onClick={() => deleteNote(summary.id)}>
                 <TrashIcon />

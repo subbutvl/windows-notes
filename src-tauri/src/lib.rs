@@ -1,4 +1,5 @@
 mod drive;
+mod export;
 mod fonts;
 mod measure;
 mod store;
@@ -264,9 +265,26 @@ fn screen_info(window: tauri::WebviewWindow) -> measure::ScreenInfo {
     measure::screen_info(&window)
 }
 
+#[tauri::command]
+async fn export_note_pdf(window: tauri::WebviewWindow, path: String) -> CmdResult<()> {
+    export::write_pdf(window, &path).await
+}
+
+#[tauri::command]
+fn export_note_html(path: String, html: String) -> CmdResult<()> {
+    export::write_html(&path, &html)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    // Opening the app again (shortcut, .exe, Start menu) brings back the running
+    // window, even from the notification area, instead of starting a second copy.
+    // Speed tests with WINDOWS_NOTES_DATA_DIR run beside the real app, so they skip it.
+    if std::env::var_os("WINDOWS_NOTES_DATA_DIR").is_none() {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_main(app)));
+    }
+    builder
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -314,6 +332,8 @@ pub fn run() {
             screen_info,
             search_notes,
             export_library,
+            export_note_pdf,
+            export_note_html,
             import_library,
             drive_status,
             drive_set_client,
