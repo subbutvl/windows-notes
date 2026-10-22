@@ -4,7 +4,20 @@ import { TOOLS } from "../tools/registry";
 import { useNotes } from "../lib/store";
 import { CloseIcon } from "./Icons";
 
-const GROUPS = [...SHORTCUT_GROUPS, { title: "Quick tools", items: TOOLS.map((t): [string, string] => [t.label, TOOL_KEYS[t.id]]) }];
+const TOOL_ROWS = TOOLS.map((t): [string, string] => [t.label, TOOL_KEYS[t.id]]);
+
+const Rows = ({ items }: { items: [string, string][] }) => (
+  <>
+    {items.map(([label, keys]) => (
+      <div key={label} className="shortcut-row">
+        <dt>{label}</dt>
+        <dd>
+          <kbd>{keys}</kbd>
+        </dd>
+      </div>
+    ))}
+  </>
+);
 
 export function ShortcutsDialog() {
   const close = () => useNotes.setState({ showShortcuts: false });
@@ -31,22 +44,21 @@ export function ShortcutsDialog() {
           </button>
         </div>
         <div className="shortcut-columns">
-          {GROUPS.map((g) => (
+          {SHORTCUT_GROUPS.map((g) => (
             <section key={g.title}>
               <h3>{g.title}</h3>
               <dl>
-                {g.items.map(([label, keys]) => (
-                  <div key={label} className="shortcut-row">
-                    <dt>{label}</dt>
-                    <dd>
-                      <kbd>{keys}</kbd>
-                    </dd>
-                  </div>
-                ))}
+                <Rows items={g.items} />
               </dl>
             </section>
           ))}
         </div>
+        <section className="shortcut-tools">
+          <h3>Quick tools</h3>
+          <dl>
+            <Rows items={TOOL_ROWS} />
+          </dl>
+        </section>
       </div>
     </div>
   );
