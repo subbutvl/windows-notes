@@ -1,5 +1,6 @@
 mod drive;
 mod export;
+mod files;
 mod fonts;
 mod keys;
 mod measure;
@@ -338,6 +339,7 @@ pub fn run() {
             export_library,
             export_note_pdf,
             export_note_html,
+            files::save_file,
             import_library,
             drive_status,
             drive_set_client,

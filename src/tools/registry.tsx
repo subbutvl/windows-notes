@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type ReactNode } from "react";
-import { CalculatorIcon, CalendarIcon, CameraIcon, CaseIcon, TextCountIcon, UnitsIcon, WhitespaceIcon, ClipboardIcon, ClockIcon, CurrencyIcon, EyedropperIcon, KeyIcon, PaletteIcon, RulerIcon, ScissorsIcon, SwatchesIcon } from "../components/Icons";
+import { AppIconIcon, AudioIcon, CalculatorIcon, SplashIcon, ThumbnailIcon, CalendarIcon, CameraIcon, CaseIcon, ImageIcon, TextCountIcon, UnitsIcon, WhitespaceIcon, ClipboardIcon, ClockIcon, CurrencyIcon, EyedropperIcon, KeyIcon, PaletteIcon, RulerIcon, ScissorsIcon, SwatchesIcon } from "../components/Icons";
 import { SEPARATOR, useMenu, type MenuEntry } from "../lib/menu";
 import { KEYS, TOOL_KEYS } from "../lib/shortcuts";
 import { useTools, type ToolId } from "../lib/tools";
@@ -25,6 +25,11 @@ const CaseConverter = later(() => import("./TextTools"), "CaseConverter");
 const WhitespaceRemover = later(() => import("./TextTools"), "WhitespaceRemover");
 const UnitTool = later(() => import("./UnitTool"), "UnitTool");
 const PhotoTool = later(() => import("./PhotoTool"), "PhotoTool");
+const ImageConverter = later(() => import("./ImageConverter"), "ImageConverter");
+const IconGenerator = later(() => import("./IconGenerator"), "IconGenerator");
+const SplashGenerator = later(() => import("./Generators"), "SplashGenerator");
+const ThumbnailGenerator = later(() => import("./Generators"), "ThumbnailGenerator");
+const AudioConverter = later(() => import("./AudioConverter"), "AudioConverter");
 
 type Group = "everyday" | "text" | "colour" | "media" | "screen";
 
@@ -46,6 +51,11 @@ export const TOOLS: { id: ToolId; label: string; group: Group; wide?: boolean; i
   { id: "color", label: "Color Codes", group: "colour", icon: <PaletteIcon size={16} />, render: (copy) => <ColorTool copy={copy} /> },
   { id: "tailwind", label: "Tailwind Colors", group: "colour", icon: <SwatchesIcon size={16} />, render: (copy) => <TailwindTool copy={copy} /> },
   { id: "picker", label: "Screen Color Picker", group: "colour", icon: <EyedropperIcon size={16} />, render: (copy) => <PickerTool copy={copy} /> },
+  { id: "image", label: "Image Converter", group: "media", wide: true, icon: <ImageIcon size={16} />, render: (copy) => <ImageConverter copy={copy} /> },
+  { id: "icons", label: "Icon Generator", group: "media", wide: true, icon: <AppIconIcon size={16} />, render: (copy) => <IconGenerator copy={copy} /> },
+  { id: "splash", label: "Splash Screen Generator", group: "media", wide: true, icon: <SplashIcon size={16} />, render: (copy) => <SplashGenerator copy={copy} /> },
+  { id: "thumbnail", label: "Thumbnail Generator", group: "media", wide: true, icon: <ThumbnailIcon size={16} />, render: (copy) => <ThumbnailGenerator copy={copy} /> },
+  { id: "audio", label: "Audio Converter", group: "media", wide: true, icon: <AudioIcon size={16} />, render: (copy) => <AudioConverter copy={copy} /> },
   { id: "photo", label: "Photography Tools", group: "media", icon: <CameraIcon size={16} />, render: (copy) => <PhotoTool copy={copy} /> },
   { id: "snip", label: "Screen Snip", group: "screen", icon: <ScissorsIcon size={16} />, render: () => <SnipTool /> },
   { id: "measure", label: "Screen Measure", group: "screen", icon: <RulerIcon size={16} />, render: () => <MeasureTool /> },

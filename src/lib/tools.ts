@@ -7,7 +7,7 @@ import { INSERT_TEXT_EVENT } from "../editor/extensions";
  * a backup or a JSON export, and nothing is read back from one; it is all gone
  * when the app quits.
  */
-export type ToolId = "calculator" | "color" | "clipboard" | "password" | "currency" | "snip" | "tailwind" | "picker" | "measure" | "dates" | "clock" | "textCount" | "textCase" | "whitespace" | "units" | "photo";
+export type ToolId = "calculator" | "color" | "clipboard" | "password" | "currency" | "snip" | "tailwind" | "picker" | "measure" | "dates" | "clock" | "textCount" | "textCase" | "whitespace" | "units" | "photo" | "image" | "icons" | "splash" | "thumbnail" | "audio";
 
 export interface Rates {
   /** Day the rates were published (ECB reference rates). */

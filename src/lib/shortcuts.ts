@@ -74,6 +74,11 @@ export const TOOL_KEYS: Record<ToolId, string> = {
   whitespace: "Alt+Q",
   units: "Alt+N",
   photo: "Alt+F",
+  image: "Alt+I",
+  icons: "Alt+K",
+  splash: "Alt+H",
+  thumbnail: "Alt+B",
+  audio: "Alt+A",
 };
 
 /** The quick tool for an Alt+letter key press, given as a key code like "KeyX". */
