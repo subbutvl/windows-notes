@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
-import { SHORTCUT_GROUPS } from "../lib/shortcuts";
+import { SHORTCUT_GROUPS, TOOL_KEYS } from "../lib/shortcuts";
+import { TOOLS } from "../tools/registry";
 import { useNotes } from "../lib/store";
 import { CloseIcon } from "./Icons";
+
+const GROUPS = [...SHORTCUT_GROUPS, { title: "Quick tools", items: TOOLS.map((t): [string, string] => [t.label, TOOL_KEYS[t.id]]) }];
 
 export function ShortcutsDialog() {
   const close = () => useNotes.setState({ showShortcuts: false });
@@ -28,7 +31,7 @@ export function ShortcutsDialog() {
           </button>
         </div>
         <div className="shortcut-columns">
-          {SHORTCUT_GROUPS.map((g) => (
+          {GROUPS.map((g) => (
             <section key={g.title}>
               <h3>{g.title}</h3>
               <dl>

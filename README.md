@@ -35,6 +35,8 @@ Press **Ctrl+/** in the app for the full list. The most used:
 | Ctrl+Alt+T | Insert table |
 | Ctrl+Shift+P | Pin note |
 | Ctrl+Shift+K | Open or close the last quick tool |
+| Alt+C, O, P, W, V, G, U, S, M, D, T | Calculator, Color Codes, Screen Color Picker, Tailwind Colors, Clipboard History, Password Generator, Currency Converter, Screen Snip, Screen Measure, Date Calculator, World Clock |
+| Ctrl+Shift+E / Ctrl+Shift+W | Export the open note as PDF / HTML |
 
 Right-click anywhere for the app's own menus: formatting and tables in a note, pin/move/delete on a note in the list, new note/subfolder/rename/delete on a folder. Notes can be dragged onto a folder.
 

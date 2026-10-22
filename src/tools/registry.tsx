@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { CalculatorIcon, CalendarIcon, ClipboardIcon, ClockIcon, CurrencyIcon, EyedropperIcon, KeyIcon, PaletteIcon, RulerIcon, ScissorsIcon, SwatchesIcon } from "../components/Icons";
 import { SEPARATOR, useMenu, type MenuEntry } from "../lib/menu";
-import { KEYS } from "../lib/shortcuts";
+import { KEYS, TOOL_KEYS } from "../lib/shortcuts";
 import { useTools, type ToolId } from "../lib/tools";
 import { Calculator } from "./Calculator";
 import { ClipboardTool } from "./ClipboardTool";
@@ -34,7 +34,7 @@ export const TOOLS: { id: ToolId; label: string; icon: ReactNode; render(copy: C
 function toolsMenu(): MenuEntry[] {
   const { open, tool, toggle } = useTools.getState();
   return [
-    ...TOOLS.map((t) => ({ label: t.label, checked: open && tool === t.id, onSelect: () => (open && tool === t.id ? undefined : toggle(t.id)) })),
+    ...TOOLS.map((t) => ({ label: t.label, shortcut: TOOL_KEYS[t.id], checked: open && tool === t.id, onSelect: () => (open && tool === t.id ? undefined : toggle(t.id)) })),
     open && SEPARATOR,
     open && { label: "Close Tool", shortcut: KEYS.tools, onSelect: () => useTools.setState({ open: false }) },
   ];

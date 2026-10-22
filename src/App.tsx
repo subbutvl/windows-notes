@@ -10,7 +10,7 @@ import { Sidebar } from "./components/Sidebar";
 import { ToolsPanel } from "./components/ToolsPanel";
 import { copySelection, pasteIntoInput } from "./lib/clipboard";
 import { SEPARATOR, useMenu } from "./lib/menu";
-import { KEYS } from "./lib/shortcuts";
+import { KEYS, toolForKey } from "./lib/shortcuts";
 import { useNotes } from "./lib/store";
 import { useTheme } from "./lib/theme";
 import { useTools, watchClipboard } from "./lib/tools";
@@ -96,6 +96,8 @@ export default function App() {
         if (s.selectedId && !s.notes[s.selectedId]?.deletedAt) s.togglePin(s.selectedId);
       } else if (ctrl && e.shiftKey && key === "d") cycle();
       else if (ctrl && (key === "/" || e.code === "Slash")) useNotes.setState({ showShortcuts: !s.showShortcuts });
+      else if (ctrl && e.shiftKey && key === "k") useTools.getState().toggle();
+      else if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey && toolForKey(e.code)) useTools.getState().toggle(toolForKey(e.code));
       else if (!isBrowserKey(e)) return;
       e.preventDefault();
     };

@@ -177,12 +177,27 @@ export function Editor() {
   const deleted = !!summary?.deletedAt;
 
   const runExport = (kind: ExportKind) => {
-    if (!editor || !summary) return;
+    if (!editor || !summary || deleted) return;
     saveNow();
     exportNote(editor, kind, summary.title, longDate(summary.updatedAt)).catch((e) =>
       useNotes.setState({ error: `Couldn't export the note: ${e}` }),
     );
   };
+  const exportRef = useRef(runExport);
+  exportRef.current = runExport;
+
+  // Ctrl+Shift+E exports the open note as a PDF, Ctrl+Shift+W as HTML.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || !e.shiftKey || e.altKey) return;
+      const kind = e.code === "KeyE" ? "pdf" : e.code === "KeyW" ? "html" : null;
+      if (!kind) return;
+      e.preventDefault();
+      exportRef.current(kind);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <main className="editor-pane">
@@ -202,11 +217,11 @@ export function Editor() {
               <button
                 className="tool-button"
                 aria-label="Export note"
-                title="Export note as PDF or HTML"
+                title={`Export note as PDF (${KEYS.exportPdf}) or HTML (${KEYS.exportHtml})`}
                 onClick={(e) =>
                   openContextMenu(e, [
-                    { label: "Export as PDF…", onSelect: () => runExport("pdf") },
-                    { label: "Export as HTML…", onSelect: () => runExport("html") },
+                    { label: "Export as PDF…", shortcut: KEYS.exportPdf, onSelect: () => runExport("pdf") },
+                    { label: "Export as HTML…", shortcut: KEYS.exportHtml, onSelect: () => runExport("html") },
                   ])
                 }
               >

@@ -1,3 +1,5 @@
+import type { ToolId } from "./tools";
+
 /** Every keyboard shortcut, for tooltips, menus and the Ctrl+/ sheet. */
 export const KEYS = {
   newNote: "Ctrl+N",
@@ -8,6 +10,8 @@ export const KEYS = {
   shortcuts: "Ctrl+/",
   tools: "Ctrl+Shift+K",
   deleteNote: "Delete",
+  exportPdf: "Ctrl+Shift+E",
+  exportHtml: "Ctrl+Shift+W",
 
   undo: "Ctrl+Z",
   redo: "Ctrl+Y",
@@ -49,6 +53,27 @@ export const KEYS = {
   nextCell: "Tab",
 } as const;
 
+/** Alt+letter opens each quick tool (pressing it again closes it). */
+export const TOOL_KEYS: Record<ToolId, string> = {
+  calculator: "Alt+C",
+  color: "Alt+O",
+  picker: "Alt+P",
+  tailwind: "Alt+W",
+  clipboard: "Alt+V",
+  password: "Alt+G",
+  currency: "Alt+U",
+  snip: "Alt+S",
+  measure: "Alt+M",
+  dates: "Alt+D",
+  clock: "Alt+T",
+};
+
+/** The quick tool for an Alt+letter key press (by physical key, so any keyboard layout works). */
+export function toolForKey(code: string): ToolId | undefined {
+  const letter = /^Key([A-Z])$/.exec(code)?.[1];
+  return (Object.keys(TOOL_KEYS) as ToolId[]).find((id) => TOOL_KEYS[id] === `Alt+${letter}`);
+}
+
 export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
   {
     title: "Notes",
@@ -57,6 +82,8 @@ export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
       ["New folder", KEYS.newFolder],
       ["Search", KEYS.search],
       ["Pin or unpin note", KEYS.pin],
+      ["Export note as PDF", KEYS.exportPdf],
+      ["Export note as HTML", KEYS.exportHtml],
       ["Delete note (in the list)", KEYS.deleteNote],
       ["Previous or next note", "Up / Down"],
       ["Switch light and dark", KEYS.toggleTheme],
@@ -71,8 +98,11 @@ export const SHORTCUT_GROUPS: { title: string; items: [string, string][] }[] = [
       ["Redo", KEYS.redo],
       ["Paste without formatting", KEYS.pastePlain],
       ["Insert link", KEYS.link],
+      ["Open a link", "Click"],
+      ["Edit a link", "Right-click"],
       ["Insert table", KEYS.table],
       ["Next table cell", KEYS.nextCell],
+      ["Tints & shades of a colour code", "Right-click"],
     ],
   },
   {
