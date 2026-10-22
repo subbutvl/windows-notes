@@ -13,11 +13,49 @@ const BITRATES = [96, 128, 160, 192, 256, 320];
 
 const isAudio = (f: File) => f.type.startsWith("audio/") || /\.(mp3|wav|aac|m4a|ogg|oga|opus|flac|weba|webm|wma|aif|aiff)$/i.test(f.name);
 
+/**
+ * Reads the sample rate from a WAV, MP3 or ADTS AAC header, so "Keep" keeps it.
+ * The WebView decodes everything else at its own rate (usually 48 kHz).
+ */
+function headerRate(buf: ArrayBuffer): number | null {
+  const b = new Uint8Array(buf);
+  const tag = (i: number) => String.fromCharCode(b[i], b[i + 1], b[i + 2], b[i + 3]);
+  const v = new DataView(buf);
+  if (b.length > 12 && tag(0) === "RIFF" && tag(8) === "WAVE") {
+    for (let i = 12; i + 16 <= b.length; i += 8 + v.getUint32(i + 4, true) + (v.getUint32(i + 4, true) & 1)) {
+      if (tag(i) === "fmt ") return v.getUint32(i + 12, true);
+    }
+    return null;
+  }
+  // Skip an ID3 tag, then look for the first frame header.
+  let i = b.length > 10 && tag(0).startsWith("ID3") ? 10 + ((b[6] << 21) | (b[7] << 14) | (b[8] << 7) | b[9]) : 0;
+  for (const end = Math.min(b.length - 4, i + 65536); i < end; i++) {
+    if (b[i] !== 0xff || (b[i + 1] & 0xe0) !== 0xe0) continue;
+    if ((b[i + 1] & 0xf6) === 0xf0) {
+      const aac = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350][(b[i + 2] >> 2) & 0x0f];
+      if (aac) return aac;
+      continue;
+    }
+    const version = (b[i + 1] >> 3) & 3; // 3 = MPEG 1, 2 = MPEG 2, 0 = MPEG 2.5
+    const base = [44100, 48000, 32000][(b[i + 2] >> 2) & 3];
+    if (version === 1 || ((b[i + 1] >> 1) & 3) === 0 || !base) continue;
+    return version === 3 ? base : version === 2 ? base / 2 : base / 4;
+  }
+  return null;
+}
+
 /** Decodes any audio the WebView can play, resampled and mixed to the chosen rate and channels. */
 async function decode(file: File, sampleRate: number | null, channels: 1 | 2 | null) {
-  const ctx = new AudioContext();
+  const data = await file.arrayBuffer();
+  const native = headerRate(data);
+  let ctx: AudioContext;
   try {
-    const decoded = await ctx.decodeAudioData(await file.arrayBuffer());
+    ctx = new AudioContext(native ? { sampleRate: native } : undefined);
+  } catch {
+    ctx = new AudioContext();
+  }
+  try {
+    const decoded = await ctx.decodeAudioData(data);
     const rate = sampleRate ?? decoded.sampleRate;
     const count = channels ?? (Math.min(decoded.numberOfChannels, 2) as 1 | 2);
     if (rate === decoded.sampleRate && count === decoded.numberOfChannels) return decoded;

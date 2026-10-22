@@ -93,7 +93,7 @@ function render(canvas: HTMLCanvasElement, w: number, h: number, s: State) {
   if (s.background === "picture" && s.bgPicture) {
     ctx.fillStyle = s.color1;
     ctx.fillRect(0, 0, w, h);
-    drawPicture(ctx, s.bgPicture, 0, 0, w, h, true, s.zoom, s.focusX, s.focusY);
+    drawPicture(ctx, s.bgPicture, 0, 0, w, h, true, s.zoom / 100, s.focusX / 100, s.focusY / 100);
   } else if (s.background === "gradient") {
     const a = (s.angle * Math.PI) / 180;
     const r = Math.abs(w * Math.cos(a)) / 2 + Math.abs(h * Math.sin(a)) / 2;
